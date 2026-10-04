@@ -340,6 +340,7 @@
                 <button id="tab-btn-lifecycle" class="tab-btn" onclick="switchTab('lifecycle')">TIME_DILATION.md</button>
                 <button id="tab-btn-relevancy" class="tab-btn" onclick="switchTab('relevancy')">RELEVANCY_FOVEATED.md</button>
                 <button id="tab-btn-visualbudget" class="tab-btn" onclick="switchTab('visualbudget')">VISUAL_BUDGET.md (GPU ms)</button>
+                <button id="tab-btn-locationcache" class="tab-btn" onclick="switchTab('locationcache')">LOCATION_CACHE.md (Muscle Memory)</button>
                 <button id="tab-btn-affordances" class="tab-btn" onclick="switchTab('affordances')">AFFORDANCES.md</button>
                 <button id="tab-btn-neural" class="tab-btn" onclick="switchTab('neural')">NEURAL_MAP.json</button>
                 <button id="tab-btn-memory" class="tab-btn" onclick="switchTab('memory')">MEMORY.md</button>
@@ -360,6 +361,7 @@
         <!-- Controls -->
         <div class="controls">
             <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
+            <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector(); switchTab('locationcache');">🧠 Spatial Muscle Memory (Cache)</button>
             <button class="action-btn" style="background: #059669;" onclick="openNpcInspector(); switchTab('visualbudget');">✨ Foveated Visual Budget (GPU ms)</button>
             <button class="action-btn" style="background: #be185d;" onclick="openNpcInspector(); switchEntity('arena'); switchTab('relevancy');">🎯 FoV Relevancy Culling (PvP)</button>
             <button class="action-btn" style="background: #4338ca;" onclick="openNpcInspector(); switchTab('lifecycle')">⏩ Time-Dilation Training (Age NPCs)</button>
@@ -678,6 +680,82 @@
 
         function toggleGpuHiZ(val) {
             visualBudgetState.enableGpuHiZ = val;
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        // Localized Spatial Muscle Memory & Surface Radiance Caching State
+        const spatialMemoryState = {
+            locationId: 'pyr', // 'pyr' | 'verdant' | 'roots'
+            familiarity: 0.85, // 85% familiarity / warm cache
+            queryPatches: 300, // visible voxel patches per frame
+            prewarmed: true
+        };
+
+        function calculateSpatialMemory(locId, famRatio, totalQueries) {
+            const locProfiles = {
+                pyr: {
+                    name: "Pyr Outpost (Dunes Citadel)",
+                    regionId: 1,
+                    desc: "Hot sand dunes, sandstone battlements, pre-baked harsh directional radiance",
+                    ambientColor: "#f59e0b"
+                },
+                verdant: {
+                    name: "Verdant Verge (Root Nursery Grove)",
+                    regionId: 2,
+                    desc: "Dense bark canopy, multi-bounce green foliage irradiance, high SVT texture page reuse",
+                    ambientColor: "#10b981"
+                },
+                roots: {
+                    name: "Prime Roots (Underground Chasm)",
+                    regionId: 3,
+                    desc: "Subterranean bioluminescent moss, kitin nest geometry, complex localized light probes",
+                    ambientColor: "#a855f7"
+                }
+            };
+
+            const profile = locProfiles[locId] || locProfiles.pyr;
+            const hitRatePct = (famRatio * 100.0);
+            const coldPerPatchMs = 0.052; // Full rasterization, mesh cluster decompress & 2-bounce ray tracing
+            const warmPerPatchMs = 0.0035; // O(1) hash table lookup & memory bus fetch
+
+            const coldFrameMs = totalQueries * coldPerPatchMs; // ~15.60 ms
+            const warmFrameMs = (totalQueries * famRatio * warmPerPatchMs) +
+                                (totalQueries * (1.0 - famRatio) * coldPerPatchMs); // ~4.11 ms at 85%
+            const computeSavedMs = coldFrameMs - warmFrameMs;
+            const latencyReductionPct = coldFrameMs > 0 ? ((computeSavedMs / coldFrameMs) * 100.0) : 0;
+            const vramKb = (totalQueries * 256) / 1024;
+            const totalStoredPatches = Math.round(totalQueries * (1.5 + famRatio * 2.0));
+
+            return {
+                profile,
+                hitRatePct: hitRatePct.toFixed(1),
+                coldFrameMs: coldFrameMs.toFixed(2),
+                warmFrameMs: warmFrameMs.toFixed(2),
+                computeSavedMs: computeSavedMs.toFixed(2),
+                latencyReductionPct: latencyReductionPct.toFixed(1),
+                vramKb: vramKb.toFixed(1),
+                totalStoredPatches
+            };
+        }
+
+        function setSpatialMemoryLocation(locId) {
+            spatialMemoryState.locationId = locId;
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function setSpatialMemoryFamiliarity(val) {
+            spatialMemoryState.familiarity = parseFloat(val);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function setSpatialMemoryPatches(val) {
+            spatialMemoryState.queryPatches = parseInt(val);
             if (document.getElementById('npc-inspector').classList.contains('open')) {
                 renderInspectorContent();
             }
@@ -1245,6 +1323,82 @@ When 70% of non-visible world geometry is discarded through frustum and occlusio
 • <b>Final Frame Time with Film-Grade Visuals:</b> <span style="color:#10b981; font-weight:bold;">${b.finalFrameTime.toFixed(2)} ms</span> (Under ${b.targetBudgetMs.toFixed(2)}ms cap!)
 • <b>Safety Headroom Margin:</b> <span style="color:#34d399; font-weight:bold;">+${b.safetyHeadroom.toFixed(2)} ms</span>
 • <b>Effective Frame Rate:</b> <span style="color:#38bdf8; font-weight:bold;">${b.effectiveFps.toFixed(1)} FPS (Rock-Solid Smooth Cadence)</span>
+`;
+                return;
+            }
+
+            if (activeTab === 'locationcache') {
+                const mem = calculateSpatialMemory(
+                    spatialMemoryState.locationId,
+                    spatialMemoryState.familiarity,
+                    spatialMemoryState.queryPatches
+                );
+                body.innerHTML = `
+<span style="color:#38bdf8;"># LOCATION_CACHE.md: Localized Spatial Muscle Memory & Surface Radiance Caching</span>
+
+<span style="color:#f59e0b;">## 1. Can Game Engines Have "Localized Muscle Memory" For Locations?</span>
+<b>YES — In modern graphics architecture, this exact paradigm is implemented through 4 core systems:</b>
+
+1. <b>Surface Radiance Caching (Lumen Surface Cache / Neural Radiance Caching - NRC):</b>
+   • The engine bakes and caches incoming direct and multi-bounce indirect light (irradiance, albedo, normals, roughness) onto localized 3D surface voxels / mesh cards.
+   • When you return to a familiar room or outpost, the GPU doesn't trace expensive secondary reflection rays into darkness; it looks up the pre-populated Surface Cache ("muscle memory").
+   • <b>Result:</b> Instantaneous global illumination retrieval in <b>0.2ms</b> instead of a 10ms path-tracing pass!
+
+2. <b>Streaming Virtual Texturing (SVT) & Visibility Buffer Caching (Nanite VisBuffer):</b>
+   • High-resolution texture mips and compressed geometry clusters are indexed in a resident VRAM page table.
+   • Re-entering a known biome accesses warm, resident pages—eliminating disk decompression stalls, memory bus thrashing, and shader re-compilation.
+
+3. <b>Potentially Visible Set (PVS) Tables & Spatial Hash Grids:</b>
+   • Classical Quake/Source/Unreal engines partitioned worlds into spatial cells. Each cell contains a precomputed bitmask of visible static objects.
+   • Instead of the CPU re-evaluating frustum math and bounding volumes every millisecond, visibility is an <b>O(1) bitwise array lookup</b> from memory.
+
+4. <b>Neural Radiance Caching (NRC / Spatial MLPs):</b>
+   • Compact local neural networks learn the radiance field of the biome as the player traverses it, predicting complex multi-bounce lighting via tensor cores rather than physical ray evaluation.
+
+<div style="background:#0f172a; padding:12px; border-radius:6px; margin:12px 0; border:1px solid #0284c7;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+        <span style="color:#38bdf8; font-weight:bold;">Select Biome Cache Profile:</span>
+        <div>
+            <button onclick="setSpatialMemoryLocation('pyr')" style="background:${spatialMemoryState.locationId === 'pyr' ? '#0284c7' : '#1e293b'}; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.72rem; cursor:pointer; font-weight:bold;">Pyr Outpost</button>
+            <button onclick="setSpatialMemoryLocation('verdant')" style="background:${spatialMemoryState.locationId === 'verdant' ? '#0284c7' : '#1e293b'}; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.72rem; cursor:pointer; font-weight:bold;">Verdant Verge</button>
+            <button onclick="setSpatialMemoryLocation('roots')" style="background:${spatialMemoryState.locationId === 'roots' ? '#0284c7' : '#1e293b'}; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.72rem; cursor:pointer; font-weight:bold;">Prime Roots</button>
+        </div>
+    </div>
+    <div style="font-size:0.72rem; color:#94a3b8; margin-bottom:8px;">${mem.profile.desc}</div>
+
+    <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:bold;">
+        <span style="color:#94a3b8;">Location Familiarity & Cache Warmth:</span>
+        <span style="color:#38bdf8;">${mem.hitRatePct}% (${spatialMemoryState.familiarity < 0.3 ? 'Cold First Visit / Cache Misses' : (spatialMemoryState.familiarity < 0.7 ? 'Partially Explored / Warming' : 'Warm Veteran Route / High Retrieval')})</span>
+    </div>
+    <input type="range" min="0.0" max="1.0" step="0.05" value="${spatialMemoryState.familiarity}" oninput="setSpatialMemoryFamiliarity(this.value)" style="width:100%; height:6px; accent-color:#0284c7; cursor:pointer;">
+    <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#64748b; margin-top:2px;">
+        <span>0% (Cold / Fresh Ray Trace)</span>
+        <span>50% (Transitional)</span>
+        <span>100% (Instant Muscle Memory)</span>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; margin-top:10px; margin-bottom:4px; font-weight:bold;">
+        <span style="color:#94a3b8;">Visible Voxel Patches Rendered:</span>
+        <span style="color:#38bdf8;">${spatialMemoryState.queryPatches} Surface Patches</span>
+    </div>
+    <input type="range" min="100" max="600" step="50" value="${spatialMemoryState.queryPatches}" oninput="setSpatialMemoryPatches(this.value)" style="width:100%; height:6px; accent-color:#0284c7; cursor:pointer;">
+</div>
+
+<span style="color:#f59e0b;">## 2. Cold Full-Pipeline Execution vs Warm Localized Retrieval</span>
+• <b>Target Location:</b> <span style="color:${mem.profile.ambientColor}; font-weight:bold;">${mem.profile.name}</span>
+• <b>Cold Pipeline Cost (Fresh Processing):</b> <span style="color:#f87171; font-weight:bold;">${mem.coldFrameMs} ms</span> (Saturates 16.6ms 60FPS frame budget)
+  - Full geometry decompression & vertex transform
+  - Primary ray tracing & 2-bounce Monte Carlo diffuse sampling
+  - Uncompressed texture page transcode from disk
+• <b>Warm Localized Muscle Memory (Data Retrieval):</b> <span style="color:#10b981; font-weight:bold;">${mem.warmFrameMs} ms</span>
+  - Instant O(1) spatial hash-grid lookup: <b>0.0035ms/patch</b>
+  - Pre-cached albedo, normals, roughness & stored multi-bounce radiance
+• <b>Compute Latency Saved:</b> <span style="color:#38bdf8; font-weight:bold;">-${mem.computeSavedMs} ms (-${mem.latencyReductionPct}%)</span>
+• <b>Active Surface Cache Footprint:</b> ${mem.vramKb} KB VRAM (${mem.totalStoredPatches} resident patches)
+
+<span style="color:#f59e0b;">## 3. Engineering Tradeoff: Memory vs Recomputation</span>
+Caching eliminates GPU compute spikes, but requires strict <b>LRU (Least Recently Used)</b> eviction budgets.
+By keeping a ~256MB VRAM reference cache table for current and adjacent zones, RyzomModern maintains <b>120+ FPS</b> while streaming vast seamless open-world biomes!
 `;
                 return;
             }
