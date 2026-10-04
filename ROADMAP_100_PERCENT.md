@@ -1,10 +1,10 @@
-# Ryzom Modern: 100% Complete Migration Master Roadmap & Gap Analysis
+# Ryzom Modern: 100% Complete Migration Master Roadmap & Work Breakdown
 
-This document provides the exhaustive technical audit and execution matrix required to transition **Ryzom Modern** from its current high-performance proof-of-concept / foundational engine into a **100% feature-complete, production-ready replacement for the entire legacy 2004 C++98 / NeL codebase**.
+This document tracks all remaining engineering tasks required to achieve 100% feature parity with the entire 1.8M line legacy 2004 C++98 / NeL codebase.
 
 ---
 
-## 1. Executive Status & Landed Architecture
+## 1. Executive Status Matrix
 
 | Subsystem | Legacy Ryzom (2004 C++98 / NeL) | Ryzom Modern (.NET 8 / WebGPU) | Status |
 | :--- | :--- | :--- | :--- |
@@ -18,146 +18,61 @@ This document provides the exhaustive technical audit and execution matrix requi
 | **Living Flora Ecology**| Static RNG gathering drops (10 wood) | Swanson FVS Allometric Stem Taper $e^{-0.025 \cdot \text{DBH}}$ | **Complete (100%)** |
 | **Resource Valuation** | Arbitrary fixed NPC sell prices | Swanson Residual Stumpage (Pond - Yarding - Haul - Tariff) | **Complete (100%)** |
 | **Ecosystem Balance** | Static spawn points | Ecological Arbitrage Monitor + Kitin Hive Awakening | **Complete (100%)** |
-| **Testing & Remote CI** | 20+ min fragile CMake build | GitHub Actions CI: 32/32 tests in 1.0s, 10/10 green runs | **Complete (100%)** |
+| **Testing & Remote CI** | 20+ min fragile CMake build | GitHub Actions CI: 32/32 tests in 1.0s, 11/11 green runs | **Complete (100%)** |
 
 ---
 
-## 2. Exhaustive Gap Analysis for 100% Completion
-
-To achieve parity with all 1.8M lines of original Ryzom Core C++ and NeL functionality, the remaining work is divided into **7 discrete engineering tracks**:
-
-```
-                                  ┌────────────────────────────────────────┐
-                                  │       100% RYZOM MODERN ROADMAP        │
-                                  └───────────────────┬────────────────────┘
-                                                      │
-         ┌────────────────────┬───────────────────────┼───────────────────────┬────────────────────┐
-         │                    │                       │                       │                    │
-┌────────▼────────┐  ┌────────▼────────┐     ┌────────▼────────┐     ┌────────▼────────┐  ┌────────▼────────┐
-│ Track 1: Bones  │  │ Track 2: World  │     │ Track 3: Stanza │     │ Track 4: Shard  │  │ Track 5: Web UI │
-│ Skeletal Rigging│  │ Quadtree Zone   │     │ Action Grammar  │     │ Cluster & PACS  │  │ Paperdoll, Bag  │
-│ & 3D Animations │  │ & Heightfields  │     │ Spell Modulars  │     │ Boids AI Flocks │  │ & Workbenches   │
-└─────────────────┘  └─────────────────┘     └─────────────────┘     └─────────────────┘  └─────────────────┘
-```
-
----
+## 2. Granular Task Checklist: What is Left to be Done
 
 ### Track 1: Skeletal Rigging, Skinning & Keyframe Animations (NeL 3D Bones)
-- **Current State:** Static mesh geometry (`.shape`) is fully ported and exported to glTF 2.0 with normals, tangents, and UVs.
-- **Requirements for 100% Parity:**
-  1. **`.skel` Parser (`Ryzom.Core.Formats.NeLSkeletonParser`):**
-     - Parse bone hierarchy trees, local transformation matrices, inverse bind matrices, and joint socket anchors (e.g. hand weapon slots, back shield mount, helmet socket).
-  2. **`.anim` Keyframe Decoder (`Ryzom.Core.Formats.NeLAnimationParser`):**
-     - Decode quaternion rotation channels, translation splines, and scale keys for all movement cycles (idle, walk, run, harvest swing, combat cast, death).
-  3. **GPU Skinning Vertex Shader:**
-     - WebGPU / WebGL 4-bone influence vertex skinning via uniform storage buffers ($p' = \sum w_i M_i p$).
-  4. **Animation Blend Tree Engine (`Ryzom.Engine.Animation.BlendTree`):**
-     - Real-time cross-fading between locomotion speed, directional strafing, and upper-body action overlays (e.g., swinging an axe while running).
-
----
+- [ ] **Task 1.1:** Implement `NeLSkeletonParser.cs` in `Ryzom.Core/Formats/` (read bone hierarchy, local transform, inverse bind matrices, equipment socket anchors).
+- [ ] **Task 1.2:** Implement `NeLAnimationParser.cs` in `Ryzom.Core/Formats/` (quaternion rotation channels, translation splines, keyframe tracks).
+- [ ] **Task 1.3:** Build WebGPU/WebGL 4-bone influence vertex skinning shader ($p' = \sum w_i M_i p$).
+- [ ] **Task 1.4:** Implement `AnimationBlendTree.cs` in `Ryzom.Engine/Animation/` for locomotion, harvest swing, and casting blend states.
 
 ### Track 2: Landscape Geometry, Quadtree Heightfields & Chunk Streaming (NeL Landscape)
-- **Current State:** Web client renders a local 14m bark continent grid; procedural trees and root buttresses.
-- **Requirements for 100% Parity:**
-  1. **`.zone` & `.gr` Heightmap Ingestion (`Ryzom.Core.Formats.NeLLandscapeParser`):**
-     - Decode the vast landmasses of Atys: *Verdant Heights (Matis)*, *Aeden Aqueous (Tryker)*, *Burning Desert (Fyros)*, *Withered Wastes (Zoraï)*, and *The Prime Roots*.
-  2. **Continuous Dynamic Quadtree LOD (CDLOD):**
-     - Seamless geomorphing between distance levels to eliminate mesh popping.
-  3. **Multi-Texture Splatting Shader:**
-     - 4-layer terrain blend shader combining sand, mossy bark, fertile loam, and root stone with height-blend contrast masks.
-  4. **Terrain Raycasting Collision (PACS Heightfield Clamping):**
-     - Fast SIMD heightfield lookup for ground clamping player avatars, creatures, and caravan Mektoubs.
-
----
+- [ ] **Task 2.1:** Implement `NeLLandscapeParser.cs` in `Ryzom.Core/Formats/` for `.zone` and `.gr` continent heightmaps.
+- [ ] **Task 2.2:** Build Continuous Dynamic Quadtree LOD (CDLOD) terrain streaming for seamless chunk loading.
+- [ ] **Task 2.3:** Implement 4-layer terrain splatting shader (sand, mossy bark, fertile loam, root stone).
+- [ ] **Task 2.4:** Implement fast SIMD heightfield raycasting collision for ground clamping players and creatures.
 
 ### Track 3: The Complete Action Stanza Grammar Engine (Ryzom Core Magic & Combat)
-- **Current State:** Character vital stats (HP, Sap, Stamina) and unit tests for basic spell casts (`StanzaGrammarTests.cs`).
-- **Requirements for 100% Parity:**
-  1. **Full Brick Grammar Parser (`Ryzom.Engine.Stanza.StanzaCompiler`):**
-     - **Target Bricks:** Self, Target, Area-of-Effect (AoE sphere), Group, Cone.
-     - **Effect Bricks:** Direct Damage (Acid, Cold, Electric, Fire, Rot, Shock, Poison), Healing, Buffs/Debuffs (Blindness, Root, Slow, Paralyze), Stamina Transfer.
-     - **Modifier Bricks:** Range Booster, Cast Speed Accel, Power Multiplier, Duration Extension, Mana Efficiency.
-     - **Cost Bricks:** Sap Credit, HP Sacrifice, Stamina Burn, Reagent Consumption.
-  2. **Stanza Validation & Credit Balance Rules:**
-     - Enforce that total cost bricks equal or exceed the power rating of effect bricks.
-  3. **Brick Mastery Progression Tree:**
-     - Dynamic unlock tree based on skill usage (Fight, Magic, Forage, Craft).
-
----
+- [ ] **Task 3.1:** Implement `StanzaCompiler.cs` in `Ryzom.Engine/Stanza/` supporting all 4 Brick classes:
+  - *Target Bricks:* Self, Target, Area-of-Effect (AoE), Group, Cone.
+  - *Effect Bricks:* Acid, Cold, Electric, Fire, Rot, Shock, Poison, Heal, Buffs/Debuffs.
+  - *Modifier Bricks:* Range, Cast Speed, Power Multiplier, Duration.
+  - *Cost Bricks:* Sap Credit, HP Sacrifice, Stamina Burn, Reagents.
+- [ ] **Task 3.2:** Implement Stanza Credit Balance Validator (Total Cost >= Power Rating).
+- [ ] **Task 3.3:** Build drag-and-drop Stanza Spellbuilder Workbench UI in the Web client.
 
 ### Track 4: Distributed Shard Cluster & PACS AI Herd Ecology (NeL Net & PACS)
-- **Current State:** Single-node ASP.NET Core 8 server (`Ryzom.Server`) with a 20Hz `WorldTickHostedService` and Morton-64 grid.
-- **Requirements for 100% Parity:**
-  1. **Microservice Shard Topology (`Ryzom.Server.Cluster`):**
-     - *Gateway Service:* WebSocket connection termination and encryption.
-     - *Session / Auth Service:* Account authentication and character select.
-     - *Ring Service:* User-created custom dungeons and scenario editor.
-     - *Shard Node Services:* Dedicated spatial zones communicating via high-speed gRPC/zero-MQ.
-  2. **PACS Herd Flocking & AI Ecology (`Ryzom.Engine.AI.FlockEngine`):**
-     - Autonomous Boids herd movement for herbivorous fauna (Mektoubs, Yubos, Gubani).
-     - Predator pack tactics (hunting scouts, encircling aggression) for Carnivores (Clopper, Kipee).
-     - Seasonal foraging node regeneration cycles tied to weather and the `EcologicalArbitrageMonitor`.
-
----
+- [ ] **Task 4.1:** Implement distributed Shard Microservices in `Ryzom.Server/Cluster/` (Gateway, Session/Auth, Shard Node, Ryzom Ring).
+- [ ] **Task 4.2:** Implement Boids flocking simulation in `Ryzom.Engine/AI/` for herbivore herds (Mektoubs, Yubos, Gubani).
+- [ ] **Task 4.3:** Implement predator pack hunting tactics (Clopper, Kipee) and Kitin hive raid alerts.
 
 ### Track 5: Complete Client UI, Paperdoll Equipment & Workbenches (Ryzom UI)
-- **Current State:** Web client with health/sap/stamina bars, targeting HUD, Swanson appraisal card, and 3D viewport.
-- **Requirements for 100% Parity:**
-  1. **Paperdoll Gear System (`Ryzom.Core.Persistence.Paperdoll`):**
-     - 14 distinct equipment slots: Head, Chest, Arms, Hands, Legs, Feet, Right Hand, Left Hand, Two-Handed, 2x Earring, 2x Ring, Anklet, Pendant.
-     - Visual armor swaps: Changing armor updates the rendered character mesh in real time.
-  2. **Stanza Construction Workbench UI:**
-     - Drag-and-drop brick assembly workbench allowing players to compose custom spells and combat sequences.
-  3. **Foraging & Crafting Workbench:**
-     - Interactive material grade selection (Branchwood, Sapwood, Seasoned Heartwood, Amber Crystallized) with calculated durability, parry chance, and elemental resistance output.
-  4. **Chat & Guild Network:**
-     - Multi-channel chat: `/say` (spatial distance attenuation), `/shout`, `/team`, `/guild`, `/faction`.
-  5. **Minimap & World Map:**
-     - Vector minimap displaying player coordinates, harvestable botanical tree nodes, active caravan routes, and Kitin raid alarms.
-
----
+- [ ] **Task 5.1:** Implement 14-slot Paperdoll equipment system in `Ryzom.Core/Persistence/` and visual gear swaps in Web client.
+- [ ] **Task 5.2:** Implement Crafting Workbench calculating durability, parry chance, and elemental resistance from Swanson timber grades.
+- [ ] **Task 5.3:** Implement multi-channel in-game chat (`/say` spatial distance falloff, `/shout`, `/team`, `/guild`, `/faction`).
+- [ ] **Task 5.4:** Implement vector minimap with player coordinates, harvest nodes, and caravan routes.
 
 ### Track 6: Spatial 3D Audio & Dynamic Soundscape (NeL Sound)
-- **Current State:** Silent WebGL client.
-- **Requirements for 100% Parity:**
-  1. **Web Audio API Spatial Panner:**
-     - 3D positional audio sources for footsteps, tree felling, axe impacts, and creature cries.
-  2. **Dynamic Environmental Audio Engine:**
-     - Ambient wind and rain modulated by elevation and weather state.
-     - Prime Roots eerie underground reverberation filters.
-  3. **Situational Music Crossfader:**
-     - Seamless transitions between peaceful exploration themes, tense Kitin swarm warnings, and full battle orchestration.
-
----
+- [ ] **Task 6.1:** Implement Web Audio API 3D spatial panner nodes for positional footfalls, axe chops, and spell casts.
+- [ ] **Task 6.2:** Implement procedural environmental audio (wind, rain, Prime Roots cavern reverberation).
+- [ ] **Task 6.3:** Implement situational music crossfader (ambient peace to battle combat).
 
 ### Track 7: Automated 13 GB Creative Commons Asset Ingestion Pipeline
-- **Current State:** Batch asset cooker (`ryzom_asset_cooker.py` and `AssetUpgradeEngine.cs`) demonstrated on core test assets.
-- **Requirements for 100% Parity:**
-  1. **Full Asset Cooker Execution:**
-     - Ingestion of all 3,000+ `.shape` files, 15,000+ textures, and animation files from the official Ryzom media archives.
-  2. **Automated KTX2 / Basis Universal Compression:**
-     - Convert all Cook-Torrance PBR textures into KTX2 GPU-ready compressed textures for 80% reduced download time.
-  3. **CDN Packaging & Cloud-Native Streaming:**
-     - Package cooked glTF/KTX2 assets into range-request friendly chunk archives hosted on GitHub Releases / Cloudflare CDN.
+- [ ] **Task 7.1:** Execute batch asset cooker across all 3,000+ `.shape` meshes and 15,000+ textures.
+- [ ] **Task 7.2:** Convert all PBR textures to KTX2 / Basis Universal GPU compressed format.
+- [ ] **Task 7.3:** Package cooked glTF/KTX2 assets into range-request friendly chunk archives for CDN streaming.
 
 ---
 
-## 3. Prioritized Execution Phases
+## 3. Recommended Next Implementation Targets
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ Milestone 1: Skeletal Skinning & Walk/Harvest Animation (.skel / .anim / WebGPU)      │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Milestone 2: Continuous Quadtree Terrain & Atys Zone Heightfield Ingestion             │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Milestone 3: Stanza Action Grammar Compiler & Drag-and-Drop Spellbuilder Workbench     │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Milestone 4: Paperdoll 14-Slot Equipment System & Crafting Matrix (Q1 - Q250)          │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Milestone 5: Web Audio API 3D Positional Soundscape & Environmental Atmosphere        │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Milestone 6: Distributed Shard Actor Gateway & Multi-Player Entity Area-of-Interest   │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Milestone 7: Full 13 GB Asset Cooker Pipeline to KTX2 / glTF 2.0 CDN Delivery          │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
+To proceed immediately, select any of the following high-impact milestones:
+
+1. **Target A (Magic & Combat):** Implement the complete **Action Stanza Grammar Engine** (`StanzaCompiler.cs` + all 4 Brick classes + validator + Web drag-and-drop spellbuilder).
+2. **Target B (Skeletal Animation):** Implement **Skeletal Rigging & Animation Decoders** (`NeLSkeletonParser.cs` + `NeLAnimationParser.cs` + WebGL joint matrix skinning).
+3. **Target C (Sound & Atmosphere):** Implement **Web Audio API 3D Positional Audio & Soundscape** (spatial footsteps, axe impact, ambient wind, and combat themes).
+4. **Target D (Inventory & Gear):** Implement the **14-Slot Paperdoll System & Crafting Workbench** (visual armor swapping + Swanson material recipe output).
