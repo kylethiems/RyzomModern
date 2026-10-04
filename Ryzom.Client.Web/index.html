@@ -341,6 +341,7 @@
                 <button id="tab-btn-relevancy" class="tab-btn" onclick="switchTab('relevancy')">RELEVANCY_FOVEATED.md</button>
                 <button id="tab-btn-visualbudget" class="tab-btn" onclick="switchTab('visualbudget')">VISUAL_BUDGET.md (GPU ms)</button>
                 <button id="tab-btn-locationcache" class="tab-btn" onclick="switchTab('locationcache')">LOCATION_CACHE.md (Muscle Memory)</button>
+                <button id="tab-btn-audio" class="tab-btn" onclick="switchTab('audio')">SPATIAL_AUDIO.md (Acoustics)</button>
                 <button id="tab-btn-affordances" class="tab-btn" onclick="switchTab('affordances')">AFFORDANCES.md</button>
                 <button id="tab-btn-neural" class="tab-btn" onclick="switchTab('neural')">NEURAL_MAP.json</button>
                 <button id="tab-btn-memory" class="tab-btn" onclick="switchTab('memory')">MEMORY.md</button>
@@ -361,6 +362,7 @@
         <!-- Controls -->
         <div class="controls">
             <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
+            <button class="action-btn" style="background: #7c3aed;" onclick="openNpcInspector(); switchTab('audio');">🎧 Spatial Acoustics & HRTF (Audio)</button>
             <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector(); switchTab('locationcache');">🧠 Spatial Muscle Memory (Cache)</button>
             <button class="action-btn" style="background: #059669;" onclick="openNpcInspector(); switchTab('visualbudget');">✨ Foveated Visual Budget (GPU ms)</button>
             <button class="action-btn" style="background: #be185d;" onclick="openNpcInspector(); switchEntity('arena'); switchTab('relevancy');">🎯 FoV Relevancy Culling (PvP)</button>
@@ -758,6 +760,160 @@
             spatialMemoryState.queryPatches = parseInt(val);
             if (document.getElementById('npc-inspector').classList.contains('open')) {
                 renderInspectorContent();
+            }
+        }
+
+        // Spatial Acoustics & Foveated Binaural HRTF Simulation State
+        const spatialAudioState = {
+            biomeId: 'pyr', // 'pyr' | 'verdant' | 'roots'
+            totalEmitters: 400,
+            focalRatio: 0.08, // 8% binaural HRTF voices (~32 voices)
+            peripheralRatio: 0.22, // 22% ambisonic voices (~88 voices)
+            occludedRatio: 0.30, // 30% occluded portal voices (~120 voices)
+            bufferSizeSamples: 512, // 512 (10.67ms) | 256 (5.33ms)
+            sampleRate: 48000,
+            probeCacheHitRatio: 0.90
+        };
+
+        function calculateAcousticBudget(biomeId, totalEmitters, focalRatio, bufferSamples) {
+            const biomes = {
+                pyr: {
+                    name: "Fyros Dunes (Open Air Citadel)",
+                    rt60: "0.35s",
+                    desc: "Dry sand dunes with high direct sound, minimal wall reflections, open-sky flutter dissipation",
+                    tagColor: "#f59e0b"
+                },
+                verdant: {
+                    name: "Verdant Verge (Dense Canopy Grove)",
+                    rt60: "1.80s",
+                    desc: "Organic wood trunk flutter echoes, multi-bounce leaf scattering, moist bark damping",
+                    tagColor: "#10b981"
+                },
+                roots: {
+                    name: "Prime Roots (Subterranean Cavern Chasm)",
+                    rt60: "4.20s",
+                    desc: "Deep underground acoustics, long reverberant tail, severe portal diffraction around chasm arches",
+                    tagColor: "#a855f7"
+                }
+            };
+
+            const biome = biomes[biomeId] || biomes.pyr;
+            const bufferDeadlineMs = (bufferSamples / 48000.0) * 1000.0; // 10.67ms or 5.33ms
+
+            const binauralVoices = Math.round(totalEmitters * focalRatio);
+            const ambisonicVoices = Math.round(totalEmitters * spatialAudioState.peripheralRatio);
+            const occludedVoices = Math.round(totalEmitters * spatialAudioState.occludedRatio);
+            const dormantVoices = Math.max(0, totalEmitters - (binauralVoices + ambisonicVoices + occludedVoices));
+
+            // Per-voice DSP costs (48kHz buffer)
+            const dspBinaural = 0.120; // ms
+            const dspAmbisonic = 0.025; // ms
+            const dspOccluded = 0.012; // ms
+            const dspProbeLookup = 0.002; // ms
+
+            const baselineDspMs = totalEmitters * dspBinaural; // ~48.0 ms (massive overrun)
+            const optimizedDspMs = (binauralVoices * dspBinaural) +
+                                   (ambisonicVoices * dspAmbisonic) +
+                                   (occludedVoices * dspOccluded) +
+                                   (totalEmitters * (1.0 - spatialAudioState.probeCacheHitRatio) * 0.015) +
+                                   (totalEmitters * spatialAudioState.probeCacheHitRatio * dspProbeLookup); // ~5.4 ms
+
+            const dspSavingsPct = ((baselineDspMs - optimizedDspMs) / baselineDspMs) * 100.0;
+            const bufferUtilizationPct = (optimizedDspMs / bufferDeadlineMs) * 100.0;
+
+            return {
+                biome,
+                bufferDeadlineMs: bufferDeadlineMs.toFixed(2),
+                binauralVoices,
+                ambisonicVoices,
+                occludedVoices,
+                dormantVoices,
+                baselineDspMs: baselineDspMs.toFixed(2),
+                optimizedDspMs: optimizedDspMs.toFixed(2),
+                dspSavingsPct: dspSavingsPct.toFixed(1),
+                bufferUtilizationPct: bufferUtilizationPct.toFixed(1),
+                isOverrun: optimizedDspMs > bufferDeadlineMs
+            };
+        }
+
+        function setAudioBiome(biomeId) {
+            spatialAudioState.biomeId = biomeId;
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function setAudioEmitters(val) {
+            spatialAudioState.totalEmitters = parseInt(val);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function setAudioFocal(val) {
+            spatialAudioState.focalRatio = parseFloat(val);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function setAudioBuffer(samples) {
+            spatialAudioState.bufferSizeSamples = parseInt(samples);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        // Web Audio Interactive Demo Synthesizer
+        let audioCtx = null;
+        function playSpatialAudioDemo(mode) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = mode === 'binaural' ? 'sawtooth' : (mode === 'reverb' ? 'triangle' : 'sine');
+                osc.frequency.setValueAtTime(mode === 'binaural' ? 440 : (mode === 'reverb' ? 220 : 330), now);
+                osc.frequency.exponentialRampToValueAtTime(mode === 'binaural' ? 880 : 110, now + 0.4);
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + (mode === 'reverb' ? 1.5 : 0.5));
+
+                if (mode === 'binaural') {
+                    const panner = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+                    if (panner) {
+                        panner.pan.setValueAtTime(-0.8, now);
+                        panner.pan.linearRampToValueAtTime(0.8, now + 0.4);
+                        osc.connect(gain);
+                        gain.connect(panner);
+                        panner.connect(audioCtx.destination);
+                    } else {
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                    }
+                } else if (mode === 'diffraction') {
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(450, now);
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(audioCtx.destination);
+                } else {
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                }
+
+                osc.start(now);
+                osc.stop(now + (mode === 'reverb' ? 1.5 : 0.5));
+            } catch (e) {
+                console.warn("Web Audio not supported or blocked", e);
             }
         }
 
@@ -1399,6 +1555,100 @@ When 70% of non-visible world geometry is discarded through frustum and occlusio
 <span style="color:#f59e0b;">## 3. Engineering Tradeoff: Memory vs Recomputation</span>
 Caching eliminates GPU compute spikes, but requires strict <b>LRU (Least Recently Used)</b> eviction budgets.
 By keeping a ~256MB VRAM reference cache table for current and adjacent zones, RyzomModern maintains <b>120+ FPS</b> while streaming vast seamless open-world biomes!
+`;
+                return;
+            }
+
+            if (activeTab === 'audio') {
+                const aud = calculateAcousticBudget(
+                    spatialAudioState.biomeId,
+                    spatialAudioState.totalEmitters,
+                    spatialAudioState.focalRatio,
+                    spatialAudioState.bufferSizeSamples
+                );
+                body.innerHTML = `
+<span style="color:#38bdf8;"># SPATIAL_AUDIO.md: Applying Visual Upgrades to 3D Spatial Sound & Acoustics</span>
+
+<span style="color:#f59e0b;">## 1. 1-to-1 Translation: How Visual Rendering Paradigms Map to Spatial Audio</span>
+Every cutting-edge visual rendering optimization has an exact mathematical and architectural parallel in audio DSP:
+
+1. <b>Visual Ray Tracing  ➔  Acoustic Ray Tracing & Audio Path Tracing (Steam Audio / Project Acoustics):</b>
+   • <i>Visual:</i> Traces light photons to calculate specular highlights, soft shadows, and color bleeding.
+   • <i>Audio:</i> Casts sound pressure rays from emitters to listener. Calculates <b>specular echoes</b> (slapback off canyon walls), <b>diffuse scattering</b> (flutter reverb in foliage), and <b>transmission loss</b> (muffling through stone walls/dunes).
+
+2. <b>Surface Radiance Caching ("Muscle Memory")  ➔  Acoustic Probe Wave-Field Caching:</b>
+   • <i>Visual:</i> Bakes multi-bounce irradiance into localized 3D surface voxels.
+   • <i>Audio:</i> Offline or runtime-cached 3D grid of <b>Acoustic Probes</b>. Each probe stores localized $RT_{60}$ reverb decay, early reflection vectors, and diffraction loss.
+   • <b>Result:</b> Instant $O(1)$ memory lookup in <b>0.002ms</b> instead of running an expensive numerical wave simulation!
+
+3. <b>Foveated Rendering & VRS  ➔  Foveated Binaural HRTF (Head-Related Transfer Function):</b>
+   • <i>Visual:</i> 100% full-rate pixel shading in focal gaze; coarse 50% shading in peripheral vision.
+   • <i>Audio:</i> 100% full-rate <b>Binaural HRTF convolution</b> (pinna ear shape, elevation, azimuth, early bounce reflections) only on the sounds directly in front of you (~8% of voices). Sounds in the periphery collapse into cheap <b>Ambisonics</b> or stereo panning!
+
+4. <b>Frustum & Occlusion Culling  ➔  Acoustic Portals & Low-Pass Diffraction:</b>
+   • <i>Visual:</i> Discards draw calls behind walls or outside the view pyramid.
+   • <i>Audio:</i> Geometry occluding direct line-of-sight doesn't necessarily mute sound; it bends through <b>Acoustic Portals</b> (doorways, valley gaps) with heavy high-frequency absorption ($<500Hz$ low-pass filter).
+
+5. <b>Actor Dormancy & Tick Culling  ➔  Voice Virtualization & Voice Stealing:</b>
+   • <i>Visual:</i> Distant players cease to tick bones or simulate physics.
+   • <i>Audio:</i> Sound emitters beyond 150m or sub-audible thresholds are virtualized to <b>0Hz / 0.000ms DSP time</b>, preventing audio buffer overruns in 400-player PvP arenas!
+
+<div style="background:#0f172a; padding:12px; border-radius:6px; margin:12px 0; border:1px solid #7c3aed;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+        <span style="color:#a78bfa; font-weight:bold;">Acoustic Biome Preset:</span>
+        <div>
+            <button onclick="setAudioBiome('pyr')" style="background:${spatialAudioState.biomeId === 'pyr' ? '#7c3aed' : '#1e293b'}; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.72rem; cursor:pointer; font-weight:bold;">Pyr Dunes</button>
+            <button onclick="setAudioBiome('verdant')" style="background:${spatialAudioState.biomeId === 'verdant' ? '#7c3aed' : '#1e293b'}; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.72rem; cursor:pointer; font-weight:bold;">Verdant Grove</button>
+            <button onclick="setAudioBiome('roots')" style="background:${spatialAudioState.biomeId === 'roots' ? '#7c3aed' : '#1e293b'}; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.72rem; cursor:pointer; font-weight:bold;">Prime Roots Chasm</button>
+        </div>
+    </div>
+    <div style="font-size:0.72rem; color:#94a3b8; margin-bottom:8px;">${aud.biome.desc} (Reverb RT60: <b style="color:${aud.biome.tagColor}">${aud.biome.rt60}</b>)</div>
+
+    <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:bold;">
+        <span style="color:#94a3b8;">Active Sound Emitters (PvP Battle):</span>
+        <span style="color:#a78bfa;">${spatialAudioState.totalEmitters} Concurrent Sounds</span>
+    </div>
+    <input type="range" min="50" max="600" step="25" value="${spatialAudioState.totalEmitters}" oninput="setAudioEmitters(this.value)" style="width:100%; height:6px; accent-color:#7c3aed; cursor:pointer;">
+
+    <div style="display:flex; justify-content:space-between; margin-top:10px; margin-bottom:4px; font-weight:bold;">
+        <span style="color:#94a3b8;">Focal Binaural HRTF Ratio:</span>
+        <span style="color:#a78bfa;">${(spatialAudioState.focalRatio * 100).toFixed(0)}% (${aud.binauralVoices} High-Precision 3D Voices)</span>
+    </div>
+    <input type="range" min="0.04" max="0.25" step="0.01" value="${spatialAudioState.focalRatio}" oninput="setAudioFocal(this.value)" style="width:100%; height:6px; accent-color:#7c3aed; cursor:pointer;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+        <span style="color:#94a3b8; font-size:0.75rem;">DSP Buffer Deadline:</span>
+        <div>
+            <button onclick="setAudioBuffer(256)" style="background:${spatialAudioState.bufferSizeSamples === 256 ? '#7c3aed' : '#1e293b'}; color:#fff; border:none; padding:3px 7px; border-radius:4px; font-size:0.7rem; cursor:pointer;">256 smp (5.33ms)</button>
+            <button onclick="setAudioBuffer(512)" style="background:${spatialAudioState.bufferSizeSamples === 512 ? '#7c3aed' : '#1e293b'}; color:#fff; border:none; padding:3px 7px; border-radius:4px; font-size:0.7rem; cursor:pointer;">512 smp (10.67ms)</button>
+        </div>
+    </div>
+</div>
+
+<div style="background:#1e1b4b; border:1px solid #4338ca; border-radius:6px; padding:10px; margin-bottom:12px;">
+    <div style="font-weight:bold; color:#c7d2fe; margin-bottom:6px; display:flex; justify-content:space-between;">
+        <span>🔊 Interactive Web Audio Demo (Live DSP Filters):</span>
+        <span style="font-size:0.68rem; color:#818cf8;">HEADPHONES RECOMMENDED</span>
+    </div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button onclick="playSpatialAudioDemo('binaural')" style="background:#6366f1; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:bold;">🎧 Play 3D Binaural Sweep</button>
+        <button onclick="playSpatialAudioDemo('diffraction')" style="background:#475569; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:bold;">🚪 Play Wall Diffraction (Muffled)</button>
+        <button onclick="playSpatialAudioDemo('reverb')" style="background:#8b5cf6; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:bold;">🏛️ Play Cavern Impulse Tail</button>
+    </div>
+</div>
+
+<span style="color:#f59e0b;">## 2. DSP Hardware Buffer Budget: Avoiding Audio Dropout & Crackle</span>
+• <b>Hardware Audio Buffer Deadline:</b> <span style="color:#f1f5f9; font-weight:bold;">${aud.bufferDeadlineMs} ms</span> (At 48 kHz / ${spatialAudioState.bufferSizeSamples} samples)
+• <b>Baseline Naive DSP Cost (All Binaural):</b> <span style="color:#f87171; font-weight:bold;">${aud.baselineDspMs} ms</span> (<span style="color:#ef4444; font-weight:bold;">CRITICAL BUFFER OVERRUN ➔ Audio Glitches/Crackling!</span>)
+• <b>Optimized Foveated Spatial DSP Cost:</b> <span style="color:#34d399; font-weight:bold;">${aud.optimizedDspMs} ms</span> (Comfortably inside deadline!)
+• <b>Total Audio DSP Compute Saved:</b> <span style="color:#38bdf8; font-weight:bold;">-${aud.dspSavingsPct}%</span>
+• <b>Buffer Capacity Utilization:</b> <span style="color:${aud.isOverrun ? '#ef4444' : '#10b981'}; font-weight:bold;">${aud.bufferUtilizationPct}%</span>
+
+<span style="color:#f59e0b;">## 3. Tiered Audio Voice Allocation (${spatialAudioState.totalEmitters} Total Sounds)</span>
+• <b>Focal Binaural HRTF (100% Ear Model):</b> <span style="color:#38bdf8; font-weight:bold;">${aud.binauralVoices} voices</span> (0.120ms/voice)
+• <b>Peripheral Ambisonics (3D Panned Submix):</b> <span style="color:#fbbf24; font-weight:bold;">${aud.ambisonicVoices} voices</span> (0.025ms/voice)
+• <b>Occluded Portal Diffraction (Wall Loss):</b> <span style="color:#fb923c; font-weight:bold;">${aud.occludedVoices} voices</span> (0.012ms/voice)
+• <b>Virtual Voices Dormant (0Hz Silent Culling):</b> <span style="color:#94a3b8; font-weight:bold;">${aud.dormantVoices} voices</span> (0.000ms/voice)
 `;
                 return;
             }
