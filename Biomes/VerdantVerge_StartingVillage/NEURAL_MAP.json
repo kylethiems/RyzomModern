@@ -1,0 +1,40 @@
+{
+  "biome_id": "verdant_verge",
+  "base_state": {
+    "canopy_integrity": 1.0,
+    "disturbance_stress": 0.0,
+    "root_signal_strength": 0.0
+  },
+  "sensory_inputs": [
+    "timber_harvest_volume",
+    "felling_vibrations",
+    "canopy_loss_ratio",
+    "repose_duration"
+  ],
+  "affordance_weights": {
+    "DisplaceFaunaToPeriphery": {
+      "timber_harvest_volume": 0.85,
+      "felling_vibrations": 0.95,
+      "canopy_loss_ratio": 0.90,
+      "repose_duration": -0.60
+    },
+    "SignalEcosystemDistress": {
+      "timber_harvest_volume": 0.90,
+      "felling_vibrations": 0.40,
+      "canopy_loss_ratio": 1.10,
+      "repose_duration": -0.80
+    },
+    "RegrowSaplings": {
+      "timber_harvest_volume": -0.70,
+      "felling_vibrations": -0.50,
+      "canopy_loss_ratio": 0.30,
+      "repose_duration": 1.00
+    },
+    "SustainPeacefulCanopy": {
+      "timber_harvest_volume": -0.90,
+      "felling_vibrations": -0.90,
+      "canopy_loss_ratio": -1.00,
+      "repose_duration": 0.70
+    }
+  }
+}

@@ -277,14 +277,47 @@
             <div style="margin-top: 6px; font-size: 0.68rem; color: #64748b;">Kitin Swarm Aggression: 1.00x (Stable)</div>
         </div>
 
-        <!-- Agentic NPC Inspector Drawer Modal -->
+        <!-- Dynamic Biome Ecosystem HUD -->
+        <div class="biome-hud" id="biome-hud" style="position: absolute; top: 70px; right: 20px; width: 300px; background: rgba(13, 17, 23, 0.90); border: 1px solid #30363d; border-radius: 8px; padding: 12px; font-size: 0.8rem; z-index: 10; backdrop-filter: blur(8px); box-shadow: 0 4px 16px rgba(0,0,0,0.4);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight:700; color:#38bdf8;">🌐 Dynamic Biome Ecosystem</span>
+                <span id="biome-pulse-tag" style="font-size:0.65rem; background:#064e3b; color:#34d399; padding:2px 6px; border-radius:4px; font-weight:700;">STABLE</span>
+            </div>
+            <div style="margin-bottom:6px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#94a3b8; margin-bottom:2px;">
+                    <span>Verdant Verge Canopy:</span>
+                    <span id="canopy-pct" style="color:#34d399; font-weight:bold;">100.0%</span>
+                </div>
+                <div class="progress-bar" style="height:6px; background:#1e293b; border-radius:3px; overflow:hidden;"><div id="canopy-bar" style="width:100%; height:100%; background:#10b981; transition:width 0.4s;"></div></div>
+            </div>
+            <div style="margin-bottom:6px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#94a3b8; margin-bottom:2px;">
+                    <span>Prime Roots Distress Pulse:</span>
+                    <span id="distress-val" style="color:#64748b; font-weight:bold;">0.00</span>
+                </div>
+                <div class="progress-bar" style="height:6px; background:#1e293b; border-radius:3px; overflow:hidden;"><div id="distress-bar" style="width:0%; height:100%; background:#ef4444; transition:width 0.4s;"></div></div>
+            </div>
+            <div style="font-size:0.72rem; color:#cbd5e1; margin-top:8px; border-top:1px solid #21262d; padding-top:6px; line-height:1.4;">
+                <div>Active Biome Affordance: <b id="biome-affordance-text" style="color:#38bdf8;">SustainPeacefulCanopy</b></div>
+                <div>Fauna State: <span id="fauna-status-text" style="color:#10b981;">Peaceful Grazing (Village Center)</span></div>
+                <div>Frontier Hazard: <span id="frontier-status-text" style="color:#94a3b8;">Kitin Dormant in Prime Roots</span></div>
+            </div>
+        </div>
+
+        <!-- Agentic NPC & Biome Inspector Drawer Modal -->
         <div id="npc-inspector" class="npc-inspector-modal">
             <div class="inspector-header">
                 <div>
-                    <h3 style="color: #38bdf8; font-size: 0.95rem;">🤖 Agentic NPC Brain & Somatic Inspector</h3>
-                    <div style="font-size: 0.72rem; color: #94a3b8;">Allometric Healing Timescale & Physical Scar Decals</div>
+                    <h3 style="color: #38bdf8; font-size: 0.95rem;">🤖 Agentic Brain & Biome Inspector</h3>
+                    <div style="font-size: 0.72rem; color: #94a3b8;">Zero-Host Topological Affordances & Dynamic World Shifts</div>
                 </div>
                 <button onclick="closeNpcInspector()" style="background:none; border:none; color:#cbd5e1; font-size:1.2rem; cursor:pointer;">✕</button>
+            </div>
+            <!-- Entity Switcher -->
+            <div style="display:flex; background:#0d1117; padding:4px 8px; border-bottom:1px solid #30363d; gap:6px;">
+                <button id="entity-btn-dax" class="tab-btn active" style="font-size:0.75rem; padding:4px 10px;" onclick="switchEntity('dax')">👤 Foreman Dax (NPC)</button>
+                <button id="entity-btn-village" class="tab-btn" style="font-size:0.75rem; padding:4px 10px;" onclick="switchEntity('village')">🌲 Verdant Verge (Biome)</button>
+                <button id="entity-btn-frontier" class="tab-btn" style="font-size:0.75rem; padding:4px 10px;" onclick="switchEntity('frontier')">🦂 Prime Roots (Frontier)</button>
             </div>
             <div class="inspector-tabs">
                 <button id="tab-btn-persona" class="tab-btn active" onclick="switchTab('persona')">PERSONA.md</button>
@@ -298,20 +331,21 @@
             </div>
             <div class="inspector-footer">
                 <button onclick="ambushCaravanAndInflictSlash()" style="background:#b91c1c; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:700;">💥 Ambush Caravan (Inflict Scar)</button>
-                <button onclick="simulateTremorEvent()" style="background:#d97706; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">⚠️ Tremor Alarm</button>
-                <button onclick="simulateHarvestStimulus()" style="background:#059669; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">🪓 Ingest Timber Event</button>
+                <button onclick="harvestVillageTreeAndTriggerEcosystem()" style="background:#15803d; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:700;">🪓 Clear-Cut Village Trees (Displace Fauna)</button>
+                <button onclick="allowEcosystemRecovery()" style="background:#0d9488; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">🌱 Ecological Recovery</button>
             </div>
         </div>
 
-        <div class="instruction-tag">🖱️ Click & Drag to Orbit | Click Tree to Harvest | Click Foreman Dax to Inspect Battle Scars & Timescale</div>
+        <div class="instruction-tag">🖱️ Click & Drag to Orbit | Click Tree to Harvest | Click Foreman Dax to Inspect Brain & Biome Shifts</div>
 
         <!-- Controls -->
         <div class="controls">
             <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
-            <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector()">🤖 Inspect Agentic NPC (Foreman Dax)</button>
-            <button class="action-btn" style="background: #b91c1c;" onclick="ambushCaravanAndInflictSlash()">💥 Ambush Caravan (Inflict Mandible Slash)</button>
+            <button class="action-btn" style="background: #15803d;" onclick="harvestVillageTreeAndTriggerEcosystem()">🪓 Clear-Cut Village Grove (Trigger Migration)</button>
+            <button class="action-btn" style="background: #0d9488;" onclick="allowEcosystemRecovery()">🌱 Allow Ecological Regrowth</button>
+            <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector()">🤖 Inspect Agentic Brains</button>
+            <button class="action-btn" style="background: #b91c1c;" onclick="ambushCaravanAndInflictSlash()">💥 Ambush Caravan</button>
             <button class="action-btn" onclick="castAction('Fireball', 25, 150)">Cast Fireball (25 Sap)</button>
-            <button class="action-btn" style="background: #1f6feb;" onclick="castAction('Aimed Shot', 40, 100)">Aimed Shot (40 Stamina)</button>
             <a href="comparison.html" class="action-btn" style="background: #d29922; color: #161b22;">Acetone Wash 3D ⇄</a>
             <a href="tda_comparison.html" class="action-btn" style="background: #e3b341; color: #0d1117;">TDA 5-Trit ⇄</a>
             <a href="cinematic_comparison.html" class="action-btn" style="background: #a371f7; color: #0d1117;">Cinematic GI ⇄</a>
@@ -323,6 +357,7 @@
         let currentHp = 1000, currentSap = 500, currentStam = 800;
         let harvestCount = 0;
         let activeTab = 'persona';
+        let currentEntity = 'dax'; // 'dax' | 'village' | 'frontier'
 
         // Somatic Biological Recovery Model (Swanson Allometric Healing Curve)
         let daxHasInjury = false;
@@ -396,6 +431,241 @@
             `[14:48:00 UTC] Loggers dispatched toward mature heartwood root stand (DBH ~58").`,
             `[14:50:00 UTC] Standing regional biomass steady at 81.5%. No swarm tremors detected.`
         ];
+
+        // Dynamic Biome Ecosystem State & Inter-Biome Neural Weights
+        const ecosystem = {
+            canopyIntegrity: 1.0,
+            disturbanceStress: 0.0,
+            distressPulse: 0.0,
+            villageHarvestCount: 0,
+            activeVillageAffordance: "SustainPeacefulCanopy",
+            activeFrontierAffordance: "SubterraneanBurrowRetreat",
+            villageMemory: [
+                "[Cycle 2542.01] Canopy intact at 100%. Yubo herd nesting near central brook.",
+                "[Cycle 2542.04] Homins established initial foraging lodge. Minimal bark harvesting recorded."
+            ],
+            frontierMemory: [
+                "[Cycle 2542.01] Kitin hives dormant beneath node 88-Alpha.",
+                "[Cycle 2542.03] Minor Varinx pack prowling the lower root chasms."
+            ],
+            yuboPos: [1.2, 0, -0.8],
+            yuboTarget: [1.2, 0, -0.8],
+            kitinPos: [8.5, -1.6, -7.0],
+            kitinTarget: [8.5, -1.6, -7.0]
+        };
+
+        const villageSensory = {
+            timber_harvest_volume: 0.0,
+            felling_vibrations: 0.0,
+            canopy_loss_ratio: 0.0,
+            repose_duration: 1.0
+        };
+
+        const villageWeights = {
+            DisplaceFaunaToPeriphery: { timber_harvest_volume: 0.85, felling_vibrations: 0.95, canopy_loss_ratio: 0.90, repose_duration: -0.60 },
+            SignalEcosystemDistress: { timber_harvest_volume: 0.90, felling_vibrations: 0.40, canopy_loss_ratio: 1.10, repose_duration: -0.80 },
+            RegrowSaplings: { timber_harvest_volume: -0.70, felling_vibrations: -0.50, canopy_loss_ratio: 0.30, repose_duration: 1.00 },
+            SustainPeacefulCanopy: { timber_harvest_volume: -0.90, felling_vibrations: -0.90, canopy_loss_ratio: -1.00, repose_duration: 0.70 }
+        };
+
+        const frontierSensory = {
+            incoming_root_distress: 0.0,
+            displaced_prey_scent: 0.0,
+            sap_hemorrhage_volume: 0.0,
+            surface_repose: 1.0
+        };
+
+        const frontierWeights = {
+            MobilizeKitinPatrol: { incoming_root_distress: 1.20, displaced_prey_scent: 0.40, sap_hemorrhage_volume: 1.10, surface_repose: -0.90 },
+            ApexCarnivoreMigration: { incoming_root_distress: 0.50, displaced_prey_scent: 1.15, sap_hemorrhage_volume: 0.30, surface_repose: -0.70 },
+            SubterraneanBurrowRetreat: { incoming_root_distress: -1.00, displaced_prey_scent: -0.80, sap_hemorrhage_volume: -0.90, surface_repose: 0.95 }
+        };
+
+        function evaluateVillageAffordances() {
+            let best = "SustainPeacefulCanopy";
+            let bestScore = -999;
+            const ranked = [];
+            for (const [name, w] of Object.entries(villageWeights)) {
+                let s = (w.timber_harvest_volume * villageSensory.timber_harvest_volume) +
+                        (w.felling_vibrations * villageSensory.felling_vibrations) +
+                        (w.canopy_loss_ratio * villageSensory.canopy_loss_ratio) +
+                        (w.repose_duration * villageSensory.repose_duration);
+                ranked.push({ name, score: s });
+                if (s > bestScore) { bestScore = s; best = name; }
+            }
+            ranked.sort((a,b) => b.score - a.score);
+            ecosystem.activeVillageAffordance = best;
+            return { best, bestScore, ranked };
+        }
+
+        function evaluateFrontierAffordances() {
+            let best = "SubterraneanBurrowRetreat";
+            let bestScore = -999;
+            const ranked = [];
+            for (const [name, w] of Object.entries(frontierWeights)) {
+                let s = (w.incoming_root_distress * frontierSensory.incoming_root_distress) +
+                        (w.displaced_prey_scent * frontierSensory.displaced_prey_scent) +
+                        (w.sap_hemorrhage_volume * frontierSensory.sap_hemorrhage_volume) +
+                        (w.surface_repose * frontierSensory.surface_repose);
+                ranked.push({ name, score: s });
+                if (s > bestScore) { bestScore = s; best = name; }
+            }
+            ranked.sort((a,b) => b.score - a.score);
+            ecosystem.activeFrontierAffordance = best;
+            return { best, bestScore, ranked };
+        }
+
+        function updateEcosystemUI() {
+            const canopyPct = (ecosystem.canopyIntegrity * 100).toFixed(1);
+            document.getElementById('canopy-pct').innerText = `${canopyPct}%`;
+            document.getElementById('canopy-bar').style.width = `${canopyPct}%`;
+            document.getElementById('canopy-bar').style.background = ecosystem.canopyIntegrity > 0.6 ? '#10b981' : (ecosystem.canopyIntegrity > 0.35 ? '#f59e0b' : '#ef4444');
+
+            document.getElementById('distress-val').innerText = ecosystem.distressPulse.toFixed(2);
+            document.getElementById('distress-bar').style.width = `${Math.min(100, ecosystem.distressPulse * 100)}%`;
+
+            document.getElementById('biome-affordance-text').innerText = ecosystem.activeVillageAffordance;
+            
+            const tag = document.getElementById('biome-pulse-tag');
+            if (ecosystem.distressPulse > 0.45) {
+                tag.innerText = "CRITICAL DISTRESS";
+                tag.style.background = "#7f1d1d";
+                tag.style.color = "#fca5a5";
+            } else if (ecosystem.distressPulse > 0.15) {
+                tag.innerText = "CANOPY STRAIN";
+                tag.style.background = "#78350f";
+                tag.style.color = "#fde68a";
+            } else {
+                tag.innerText = "STABLE";
+                tag.style.background = "#064e3b";
+                tag.style.color = "#34d399";
+            }
+
+            const faunaText = document.getElementById('fauna-status-text');
+            const frontierText = document.getElementById('frontier-status-text');
+
+            if (ecosystem.canopyIntegrity < 0.7) {
+                faunaText.innerText = "Fleeing Clear-Cut Grove into Wild Frontier!";
+                faunaText.style.color = "#f59e0b";
+            } else {
+                faunaText.innerText = "Peaceful Grazing (Village Center)";
+                faunaText.style.color = "#10b981";
+            }
+
+            if (ecosystem.activeFrontierAffordance === "MobilizeKitinPatrol" || ecosystem.activeFrontierAffordance === "ApexCarnivoreMigration") {
+                frontierText.innerText = "🚨 LEVEL 45 ARMORED KITIN ENCROACHING ON BORDER!";
+                frontierText.style.color = "#ef4444";
+            } else {
+                frontierText.innerText = "Kitin Dormant in Prime Roots";
+                frontierText.style.color = "#94a3b8";
+            }
+        }
+
+        function harvestVillageTreeAndTriggerEcosystem() {
+            ecosystem.villageHarvestCount++;
+            ecosystem.canopyIntegrity = Math.max(0.15, ecosystem.canopyIntegrity - 0.18);
+            ecosystem.disturbanceStress = 1.0 - ecosystem.canopyIntegrity;
+
+            villageSensory.timber_harvest_volume = Math.min(1.0, ecosystem.villageHarvestCount * 0.25);
+            villageSensory.felling_vibrations = 1.0;
+            villageSensory.canopy_loss_ratio = ecosystem.disturbanceStress;
+            villageSensory.repose_duration = 0.0;
+
+            const vEval = evaluateVillageAffordances();
+
+            const timeStr = new Date().toISOString().substring(11, 19) + ' UTC';
+            ecosystem.villageMemory.push(`[${timeStr}] CLEAR-CUT: Felled mature root stand #${ecosystem.villageHarvestCount}. Canopy down to ${(ecosystem.canopyIntegrity*100).toFixed(0)}%. Affordance: ${vEval.best}`);
+
+            // Herbivores flee radially outward from village center to perimeter
+            ecosystem.yuboTarget = [4.5 + ecosystem.villageHarvestCount * 0.6, 0, 2.5 + ecosystem.villageHarvestCount * 0.4];
+
+            // If canopy stress > 0.3, propagate subterranean distress pulse to Prime Roots Frontier
+            if (ecosystem.disturbanceStress > 0.25) {
+                ecosystem.distressPulse = Math.min(1.0, ecosystem.disturbanceStress * 1.2);
+                frontierSensory.incoming_root_distress = ecosystem.distressPulse;
+                frontierSensory.displaced_prey_scent = 0.95;
+                frontierSensory.sap_hemorrhage_volume = ecosystem.distressPulse * 0.9;
+                frontierSensory.surface_repose = 0.0;
+
+                const fEval = evaluateFrontierAffordances();
+                ecosystem.frontierMemory.push(`[${timeStr}] ROOT SENSING: Received high distress pulse (${ecosystem.distressPulse.toFixed(2)}) + fleeing prey scent. Affordance: ${fEval.best}`);
+
+                // Apex Kitin surfaces and marches toward the village border
+                ecosystem.kitinTarget = [3.2, 0, 1.0];
+
+                spawnFloatingText("🚨 DYNAMIC ECOSYSTEM SHIFT: Village Deforested! Kitin Vanguard Encroaching!", "#ef4444", window.innerWidth * 0.5, window.innerHeight * 0.25);
+
+                // Dax warns of tremor
+                daxSensory.kitin_tremor = 0.9;
+                daxSensory.deforestation_spike = 0.95;
+                evaluateDaxAffordances();
+            } else {
+                spawnFloatingText("🪓 Timber Felled! Yubo Grazers Displaced to Outskirts", "#f59e0b", window.innerWidth * 0.5, window.innerHeight * 0.25);
+            }
+
+            updateEcosystemUI();
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function allowEcosystemRecovery() {
+            ecosystem.canopyIntegrity = Math.min(1.0, ecosystem.canopyIntegrity + 0.35);
+            ecosystem.disturbanceStress = Math.max(0.0, 1.0 - ecosystem.canopyIntegrity);
+            ecosystem.distressPulse = Math.max(0.0, ecosystem.distressPulse - 0.45);
+
+            villageSensory.felling_vibrations = 0.0;
+            villageSensory.timber_harvest_volume = 0.0;
+            villageSensory.canopy_loss_ratio = ecosystem.disturbanceStress;
+            villageSensory.repose_duration = 1.0;
+            evaluateVillageAffordances();
+
+            frontierSensory.incoming_root_distress = ecosystem.distressPulse;
+            frontierSensory.displaced_prey_scent = 0.1;
+            frontierSensory.sap_hemorrhage_volume = 0.0;
+            frontierSensory.surface_repose = 1.0;
+            evaluateFrontierAffordances();
+
+            // Yubo returns to village center
+            ecosystem.yuboTarget = [1.2, 0, -0.8];
+            // Kitin retreats to deep burrows
+            ecosystem.kitinTarget = [8.5, -1.6, -7.0];
+
+            const timeStr = new Date().toISOString().substring(11, 19) + ' UTC';
+            ecosystem.villageMemory.push(`[${timeStr}] RECOVERY: Logging ceased. Swanson allometric curves sprout fast saplings. Canopy restored to ${(ecosystem.canopyIntegrity*100).toFixed(0)}%.`);
+            ecosystem.frontierMemory.push(`[${timeStr}] CALM: Distress signals ceased. Apex Kitin patrol returned to subterranean burrows.`);
+
+            daxSensory.kitin_tremor = 0.0;
+            daxSensory.deforestation_spike = 0.1;
+            evaluateDaxAffordances();
+
+            spawnFloatingText("🌱 ECOLOGICAL RECOVERY: Saplings Sprouting! Kitin Retreating to Burrows", "#10b981", window.innerWidth * 0.5, window.innerHeight * 0.25);
+
+            updateEcosystemUI();
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function switchEntity(ent) {
+            currentEntity = ent;
+            document.querySelectorAll('#entity-btn-dax, #entity-btn-village, #entity-btn-frontier').forEach(b => b.classList.remove('active'));
+            document.getElementById(`entity-btn-${ent}`).classList.add('active');
+
+            const somaticBtn = document.getElementById('tab-btn-somatic');
+            if (ent === 'dax') {
+                somaticBtn.innerText = "SOMATIC.md (Scars)";
+                somaticBtn.style.display = "block";
+            } else if (ent === 'village') {
+                somaticBtn.innerText = "FOREST_HEALTH.md";
+                somaticBtn.style.display = "block";
+            } else {
+                somaticBtn.innerText = "HIVE_HAZARD.md";
+                somaticBtn.style.display = "block";
+            }
+
+            renderInspectorContent();
+        }
 
         function evaluateDaxAffordances(contextTokens = {}) {
             let bestAffordance = "IdlePatrol";
@@ -509,6 +779,153 @@
 
         function renderInspectorContent() {
             const body = document.getElementById('inspector-body');
+
+            if (currentEntity === 'village') {
+                const vEval = evaluateVillageAffordances();
+                if (activeTab === 'persona') {
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># Biome Persona: Verdant Verge (Starting Outpost Nursery)</span>
+
+<span style="color:#f59e0b;">## Ecological Identity</span>
+• <b>Biome ID:</b> <span style="color:#10b981;">verdant_verge</span>
+• <b>Designation:</b> Homins' First Nursery & Ancient Bark Grove
+• <b>Dominant Fauna:</b> Gentle Yubo, Placid Mektoub Calves
+• <b>Canopy Baseline:</b> 12,000 m³ timber volume
+• <b>Bark Physiology:</b> Soft fibrous outer dermis, rapid minor sapling regrowth.
+
+<span style="color:#f59e0b;">## Ecological Motivation & Tolerances</span>
+• <b>Tranquility Threshold:</b> Tolerates up to 25% selective logging before signaling distress.
+• <b>Fauna Symbiosis:</b> Tree felling eliminates grazing canopy and triggers outward stampede panic.
+• <b>Mycorrhizal Link:</b> Direct subterranean root wire to Prime Roots border.
+
+<span style="color:#f59e0b;">## Active Sensory Stimulus Vector</span>
+• Timber Harvest Volume: <b>${villageSensory.timber_harvest_volume.toFixed(2)}</b>
+• Felling Vibrations:    <b>${villageSensory.felling_vibrations.toFixed(2)}</b>
+• Canopy Loss Ratio:     <b>${villageSensory.canopy_loss_ratio.toFixed(2)}</b>
+• Repose Duration:       <b>${villageSensory.repose_duration.toFixed(2)}</b>
+`;
+                } else if (activeTab === 'somatic') {
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># FOREST_HEALTH.md: Canopy Integrity & Ecological Biomass</span>
+
+<span style="color:#f59e0b;">## Standing Canopy Metrics</span>
+• <b>Canopy Integrity:</b> <span style="color:${ecosystem.canopyIntegrity > 0.6 ? '#10b981':'#ef4444'}; font-weight:bold;">${(ecosystem.canopyIntegrity * 100).toFixed(1)}%</span>
+• <b>Disturbance Stress Level:</b> ${(ecosystem.disturbanceStress * 100).toFixed(1)}%
+• <b>Subterranean Distress Pulse:</b> ${ecosystem.distressPulse.toFixed(2)} (Transmitted to Prime Roots)
+• <b>Fauna Dispersal Vector:</b> Radially outward to Buffer Zone (X: ${ecosystem.yuboPos[0].toFixed(1)})
+
+<span style="color:#f59e0b;">## Swanson Allometric Regrowth Model</span>
+• <b>Regrowth Rate:</b> +2.5% canopy restoration per 12 hours of quiet repose
+• <b>Tree Stumps Remaining:</b> ${ecosystem.villageHarvestCount} felled trunks
+`;
+                } else if (activeTab === 'affordances') {
+                    let rankedHtml = vEval.ranked.map(r => `• <b>${r.name}:</b> Utility Score = <span style="color:${r.score > 0.5 ? '#10b981':'#94a3b8'}">${r.score.toFixed(3)}</span>`).join('\n');
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># Biome Affordances: Verdant Verge</span>
+
+<span style="color:#f59e0b;">## Active Ecological Response</span>
+Winning Affordance: <span style="color:#10b981; font-weight:bold;">${vEval.best}</span> (Utility: ${vEval.bestScore.toFixed(3)})
+
+<span style="color:#f59e0b;">## Ranked Affordance Priority</span>
+${rankedHtml}
+
+<span style="color:#f59e0b;">## Executable Ecosystem Methods</span>
+1. <b>DisplaceFaunaToPeriphery()</b> — Displaces grazing herds 150m-300m into wild frontier.
+2. <b>SignalEcosystemDistress()</b> — Broadcasts chemical pheromone pulse across root network.
+3. <b>RegrowSaplings()</b> — Sprouts rapid Swanson-curve pioneer saplings during repose.
+4. <b>SustainPeacefulCanopy()</b> — Retains native herds in peaceful village center grazing nodes.
+`;
+                } else if (activeTab === 'neural') {
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># NEURAL_MAP.json: Verdant Verge Biome</span>
+
+${JSON.stringify({
+    biome_id: "verdant_verge",
+    sensory_inputs: Object.keys(villageSensory),
+    current_stimuli: villageSensory,
+    affordance_weights: villageWeights
+}, null, 2)}
+`;
+                } else if (activeTab === 'memory') {
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># MEMORY.md: Verdant Verge Episodic Disturbance Log</span>
+
+${ecosystem.villageMemory.join('\n\n')}
+`;
+                }
+                return;
+            }
+
+            if (currentEntity === 'frontier') {
+                const fEval = evaluateFrontierAffordances();
+                if (activeTab === 'persona') {
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># Biome Persona: Prime Roots Frontier (Untamed Wild Border)</span>
+
+<span style="color:#f59e0b;">## Ecological Identity</span>
+• <b>Biome ID:</b> <span style="color:#ef4444;">prime_roots_frontier</span>
+• <b>Designation:</b> Subterranean Knot & Kitin Hive Vanguard
+• <b>Dominant Species:</b> Level 45 Armored Kitin Harvesters, Level 50 Apex Kinchers
+• <b>Ecological Mandate:</b> Defense of Atys deep bark layer against industrial exploitation.
+
+<span style="color:#f59e0b;">## Predation Aggression & Kami Resonance</span>
+• Highly sensitive to prey density gradients. If herbivores pool at the frontier border, hunters mobilize inward.
+• Direct vibrational attunement to tree distress signals from upper canopy biomes.
+
+<span style="color:#f59e0b;">## Active Sensory Stimulus Vector</span>
+• Incoming Root Distress:   <b>${frontierSensory.incoming_root_distress.toFixed(2)}</b>
+• Displaced Prey Scent:     <b>${frontierSensory.displaced_prey_scent.toFixed(2)}</b>
+• Sap Hemorrhage Volume:   <b>${frontierSensory.sap_hemorrhage_volume.toFixed(2)}</b>
+• Surface Repose:          <b>${frontierSensory.surface_repose.toFixed(2)}</b>
+`;
+                } else if (activeTab === 'somatic') {
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># HIVE_HAZARD.md: Prime Roots Aggression & Swarm Patrol</span>
+
+<span style="color:#f59e0b;">## Frontier Swarm Metrics</span>
+• <b>Patrol Position:</b> X: ${ecosystem.kitinPos[0].toFixed(1)}, Z: ${ecosystem.kitinPos[2].toFixed(1)}
+• <b>Status:</b> <span style="color:${ecosystem.distressPulse > 0.3 ? '#ef4444' : '#94a3b8'}; font-weight:bold;">${ecosystem.distressPulse > 0.3 ? 'SURFACING ON BORDER (Aggressive)' : 'Subterranean Dormancy'}</span>
+• <b>Threat Rating:</b> Level 45 Armored Kitin Harvester Vanguard
+• <b>Trigger Condition:</b> Root distress amplitude > 0.35 from adjacent village logging
+`;
+                } else if (activeTab === 'affordances') {
+                    let rankedHtml = fEval.ranked.map(r => `• <b>${r.name}:</b> Utility Score = <span style="color:${r.score > 0.5 ? '#ef4444':'#94a3b8'}">${r.score.toFixed(3)}</span>`).join('\n');
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># Biome Affordances: Prime Roots Frontier</span>
+
+<span style="color:#f59e0b;">## Active Ecological Response</span>
+Winning Affordance: <span style="color:#ef4444; font-weight:bold;">${fEval.best}</span> (Utility: ${fEval.bestScore.toFixed(3)})
+
+<span style="color:#f59e0b;">## Ranked Affordance Priority</span>
+${rankedHtml}
+
+<span style="color:#f59e0b;">## Executable Ecosystem Methods</span>
+1. <b>MobilizeKitinPatrol()</b> — Deploys Level 45 Armored Kitin Harvesters along root tunnels to surface at deforested border.
+2. <b>ApexCarnivoreMigration()</b> — Shifts Apex Kincher and Varinx packs inward pursuing displaced prey.
+3. <b>SubterraneanBurrowRetreat()</b> — Predators retreat to deep Prime Roots chasms during quiet repose.
+`;
+                } else if (activeTab === 'neural') {
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># NEURAL_MAP.json: Prime Roots Frontier</span>
+
+${JSON.stringify({
+    biome_id: "prime_roots_frontier",
+    sensory_inputs: Object.keys(frontierSensory),
+    current_stimuli: frontierSensory,
+    affordance_weights: frontierWeights
+}, null, 2)}
+`;
+                } else if (activeTab === 'memory') {
+                    body.innerHTML = `
+<span style="color:#38bdf8;"># MEMORY.md: Prime Roots Frontier Episodic Log</span>
+
+${ecosystem.frontierMemory.join('\n\n')}
+`;
+                }
+                return;
+            }
+
+            // Default: Foreman Dax
             const somatic = getDaxSomaticState(recoveryTimescaleHours);
 
             if (activeTab === 'somatic') {
@@ -920,6 +1337,7 @@ ${daxEpisodicMemory.join('\n\n')}
         addWarriorAvatar(0, 0, 2.2);
 
         // 5. Stylized Foreman Dax (Karavan Overseer with dynamic battle scar)
+        // 5. Stylized Foreman Dax (Karavan Overseer with dynamic battle scar)
         function addForemanDaxAvatar(dx, dy, dz) {
             addQuad([dx-0.22, dy+0.35, dz+0.15], [dx+0.22, dy+0.35, dz+0.15], [dx+0.22, dy+1.15, dz+0.15], [dx-0.22, dy+1.15, dz+0.15], [0,0,1], [0.92, 0.70, 0.15]);
             addQuad([dx-0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.42, dz+0.1], [dx-0.12, dy+1.42, dz+0.1], [0,0,1], [0.88, 0.72, 0.58]);
@@ -930,6 +1348,55 @@ ${daxEpisodicMemory.join('\n\n')}
             addQuad([dx-0.16, dy+0.68, dz+0.17], [dx+0.12, dy+0.92, dz+0.17], [dx+0.10, dy+0.97, dz+0.17], [dx-0.18, dy+0.73, dz+0.17], [0,0,1], [0.92, 0.70, 0.15], 1.0);
         }
         addForemanDaxAvatar(2.0, 0, 1.6);
+
+        // Record boundary for static world
+        const staticIndexCount = indices.length;
+
+        // 6. Dynamic Fauna: Yubo Quadruped Mesh (Centered at origin)
+        function buildYuboMesh() {
+            // Body
+            addQuad([-0.28, 0.15, -0.2], [0.28, 0.15, -0.2], [0.28, 0.55, -0.2], [-0.28, 0.55, -0.2], [0, 0, -1], [0.76, 0.52, 0.38]);
+            addQuad([-0.28, 0.15, 0.2], [0.28, 0.15, 0.2], [0.28, 0.55, 0.2], [-0.28, 0.55, 0.2], [0, 0, 1], [0.82, 0.58, 0.42]);
+            addQuad([-0.28, 0.55, -0.2], [0.28, 0.55, -0.2], [0.28, 0.55, 0.2], [-0.28, 0.55, 0.2], [0, 1, 0], [0.88, 0.64, 0.48]);
+            // Snout & Tusks
+            addQuad([0.28, 0.25, -0.12], [0.48, 0.25, -0.12], [0.48, 0.45, -0.12], [0.28, 0.45, -0.12], [1, 0, 0], [0.92, 0.70, 0.55]);
+            addQuad([0.45, 0.22, -0.15], [0.52, 0.35, -0.15], [0.50, 0.38, -0.15], [0.43, 0.25, -0.15], [0, 1, 0], [0.95, 0.95, 0.90]);
+            // 4 Stubby Legs
+            addQuad([0.15, 0.0, 0.15], [0.25, 0.0, 0.15], [0.25, 0.2, 0.15], [0.15, 0.2, 0.15], [0, 0, 1], [0.65, 0.42, 0.30]);
+            addQuad([-0.25, 0.0, 0.15], [-0.15, 0.0, 0.15], [-0.15, 0.2, 0.15], [-0.25, 0.2, 0.15], [0, 0, 1], [0.65, 0.42, 0.30]);
+            addQuad([0.15, 0.0, -0.15], [0.25, 0.0, -0.15], [0.25, 0.2, -0.15], [0.15, 0.2, -0.15], [0, 0, -1], [0.65, 0.42, 0.30]);
+            addQuad([-0.25, 0.0, -0.15], [-0.15, 0.0, -0.15], [-0.15, 0.2, -0.15], [-0.25, 0.2, -0.15], [0, 0, -1], [0.65, 0.42, 0.30]);
+        }
+        const yuboIndexOffset = indices.length;
+        buildYuboMesh();
+        const yuboIndexCount = indices.length - yuboIndexOffset;
+
+        // 7. Dynamic Hazard: Level 45 Armored Kitin Harvester Mesh (Centered at origin)
+        function buildKitinMesh() {
+            // Arched insectoid chitin carapace
+            addQuad([-0.3, 0.3, -0.3], [0.3, 0.3, -0.3], [0.3, 0.8, -0.3], [-0.3, 0.8, -0.3], [0, 0, -1], [0.18, 0.14, 0.16]);
+            addQuad([-0.35, 0.4, 0.3], [0.35, 0.4, 0.3], [0.35, 0.95, 0.3], [-0.35, 0.95, 0.3], [0, 0, 1], [0.22, 0.16, 0.20]);
+            addQuad([-0.35, 0.95, -0.3], [0.35, 0.95, -0.3], [0.35, 0.95, 0.3], [-0.35, 0.95, 0.3], [0, 1, 0], [0.26, 0.18, 0.24]);
+            // Glowing crimson ocular visor & mandibles
+            addQuad([-0.18, 0.65, 0.32], [0.18, 0.65, 0.32], [0.18, 0.78, 0.32], [-0.18, 0.78, 0.32], [0, 0, 1], [0.98, 0.12, 0.08]);
+            addQuad([-0.25, 0.45, 0.33], [-0.10, 0.35, 0.33], [-0.08, 0.50, 0.33], [-0.22, 0.55, 0.33], [0, 0, 1], [0.95, 0.45, 0.10]);
+            addQuad([0.10, 0.35, 0.33], [0.25, 0.45, 0.33], [0.22, 0.55, 0.33], [0.08, 0.50, 0.33], [0, 0, 1], [0.95, 0.45, 0.10]);
+            // Razor Scythe Forelimbs
+            addQuad([-0.45, 0.1, 0.2], [-0.3, 0.1, 0.2], [-0.3, 0.7, 0.2], [-0.45, 0.7, 0.2], [1, 0, 0], [0.32, 0.25, 0.30]);
+            addQuad([0.3, 0.1, 0.2], [0.45, 0.1, 0.2], [0.45, 0.7, 0.2], [0.3, 0.7, 0.2], [-1, 0, 0], [0.32, 0.25, 0.30]);
+        }
+        const kitinIndexOffset = indices.length;
+        buildKitinMesh();
+        const kitinIndexCount = indices.length - kitinIndexOffset;
+
+        function getTranslatedMvp(baseMvp, tx, ty, tz) {
+            const out = new Float32Array(baseMvp);
+            out[12] = baseMvp[12] + baseMvp[0] * tx + baseMvp[4] * ty + baseMvp[8] * tz;
+            out[13] = baseMvp[13] + baseMvp[1] * tx + baseMvp[5] * ty + baseMvp[9] * tz;
+            out[14] = baseMvp[14] + baseMvp[2] * tx + baseMvp[6] * ty + baseMvp[10] * tz;
+            out[15] = baseMvp[15] + baseMvp[3] * tx + baseMvp[7] * ty + baseMvp[11] * tz;
+            return out;
+        }
 
         // Upload geometry buffers
         const posBuf = gl.createBuffer();
@@ -1015,18 +1482,43 @@ ${daxEpisodicMemory.join('\n\n')}
             mvp[14] = p[10] * tz + p[14];
             mvp[15] = -tz;
 
-            gl.uniformMatrix4fv(uMatrix, false, mvp);
             gl.uniform3f(uLightDir, 0.5, 0.8, 0.6);
             gl.uniform1f(uAmberPulse, (Math.sin(time * 3.0) + 1.0) * 0.5);
             gl.uniform3f(uScarTint, currentScarColor[0], currentScarColor[1], currentScarColor[2]);
 
-            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+            // 1. Draw Static World Geometry
+            gl.uniformMatrix4fv(uMatrix, false, mvp);
+            gl.drawElements(gl.TRIANGLES, staticIndexCount, gl.UNSIGNED_SHORT, 0);
+
+            // 2. Smoothly Animate Dynamic Fauna Positions
+            ecosystem.yuboPos[0] += (ecosystem.yuboTarget[0] - ecosystem.yuboPos[0]) * 0.04;
+            ecosystem.yuboPos[1] += (ecosystem.yuboTarget[1] - ecosystem.yuboPos[1]) * 0.04;
+            ecosystem.yuboPos[2] += (ecosystem.yuboTarget[2] - ecosystem.yuboPos[2]) * 0.04;
+
+            ecosystem.kitinPos[0] += (ecosystem.kitinTarget[0] - ecosystem.kitinPos[0]) * 0.035;
+            ecosystem.kitinPos[1] += (ecosystem.kitinTarget[1] - ecosystem.kitinPos[1]) * 0.035;
+            ecosystem.kitinPos[2] += (ecosystem.kitinTarget[2] - ecosystem.kitinPos[2]) * 0.035;
+
+            // 3. Draw Yubo Grazers
+            const yuboMvp = getTranslatedMvp(mvp, ecosystem.yuboPos[0], ecosystem.yuboPos[1], ecosystem.yuboPos[2]);
+            gl.uniformMatrix4fv(uMatrix, false, yuboMvp);
+            gl.drawElements(gl.TRIANGLES, yuboIndexCount, gl.UNSIGNED_SHORT, yuboIndexOffset * 2);
+
+            const yubo2Mvp = getTranslatedMvp(mvp, ecosystem.yuboPos[0] + 0.6, ecosystem.yuboPos[1], ecosystem.yuboPos[2] - 0.5);
+            gl.uniformMatrix4fv(uMatrix, false, yubo2Mvp);
+            gl.drawElements(gl.TRIANGLES, yuboIndexCount, gl.UNSIGNED_SHORT, yuboIndexOffset * 2);
+
+            // 4. Draw Level 45 Armored Kitin Harvester (Encroaching from Prime Roots)
+            const kitinMvp = getTranslatedMvp(mvp, ecosystem.kitinPos[0], ecosystem.kitinPos[1], ecosystem.kitinPos[2]);
+            gl.uniformMatrix4fv(uMatrix, false, kitinMvp);
+            gl.drawElements(gl.TRIANGLES, kitinIndexCount, gl.UNSIGNED_SHORT, kitinIndexOffset * 2);
 
             requestAnimationFrame(render);
         }
 
         render();
         evaluateDaxAffordances();
+        updateEcosystemUI();
     </script>
 </body>
 </html>

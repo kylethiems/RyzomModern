@@ -1,0 +1,33 @@
+{
+  "biome_id": "prime_roots_frontier",
+  "base_state": {
+    "kitin_patrol_readiness": 0.20,
+    "carnivore_hunger": 0.50
+  },
+  "sensory_inputs": [
+    "incoming_root_distress",
+    "displaced_prey_scent",
+    "sap_hemorrhage_volume",
+    "surface_repose"
+  ],
+  "affordance_weights": {
+    "MobilizeKitinPatrol": {
+      "incoming_root_distress": 1.20,
+      "displaced_prey_scent": 0.40,
+      "sap_hemorrhage_volume": 1.10,
+      "surface_repose": -0.90
+    },
+    "ApexCarnivoreMigration": {
+      "incoming_root_distress": 0.50,
+      "displaced_prey_scent": 1.15,
+      "sap_hemorrhage_volume": 0.30,
+      "surface_repose": -0.70
+    },
+    "SubterraneanBurrowRetreat": {
+      "incoming_root_distress": -1.00,
+      "displaced_prey_scent": -0.80,
+      "sap_hemorrhage_volume": -0.90,
+      "surface_repose": 0.95
+    }
+  }
+}
