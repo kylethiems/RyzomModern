@@ -2,13 +2,14 @@
 
 [![.NET 8 CI Pipeline](https://github.com/kylethiems/RyzomModern/actions/workflows/ci.yml/badge.svg)](https://github.com/kylethiems/RyzomModern/actions/workflows/ci.yml)
 [![.NET Core](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
-[![xUnit](https://img.shields.io/badge/tests-14%20passed-brightgreen.svg)](https://github.com/kylethiems/RyzomModern)
+[![xUnit](https://img.shields.io/badge/tests-19%20passed-brightgreen.svg)](https://github.com/kylethiems/RyzomModern)
 [![Graphics](https://img.shields.io/badge/Render-WebGPU%20%2F%20HTML5-orange.svg)](https://github.com/kylethiems/RyzomModern)
 [![Spatial](https://img.shields.io/badge/Spatial-Morton--64%20Z--Order-purple.svg)](https://github.com/kylethiems/RyzomModern)
+[![Live Demo](https://img.shields.io/badge/Demo-Play%20WebGPU-success.svg)](https://kylethiems.github.io/RyzomModern)
 
 **Ryzom Modern** is an automated, cloud-native modernization of **[Ryzom](https://github.com/ryzom/ryzom-core)** (The Saga of Ryzom)—the only commercial 3D MMORPG in history to release its complete C++ client, server, and **13+ gigabytes of artistic 3D assets** to the public domain under Creative Commons.
 
-This project transitions the legacy 2004 C++98 / NeL (Nevrax Library) monolith into a modern, high-throughput **.NET 8 / WebGPU** spatial computing architecture powered by functional data compression and LiDAR point-cloud decimation techniques.
+This project transitions the legacy 2004 C++98 / NeL (Nevrax Library) monolith into a modern, high-throughput **.NET 8 / WebGPU** spatial computing platform powered by functional data compression, LiDAR point-cloud decimation, and modern Entity Framework Core 8 persistence.
 
 ---
 
@@ -23,21 +24,23 @@ This project transitions the legacy 2004 C++98 / NeL (Nevrax Library) monolith i
                       ┌───────────────────▼────────────────────┐
                       │          Ryzom.Server Gateway          │
                       │   (ASP.NET Core 8 / Kestrel / gRPC)    │
-                      └───────────────────┬────────────────────┘
-                                          │
-                      ┌───────────────────▼────────────────────┐
-                      │              Ryzom.Engine              │
-                      │  - Morton-64 Z-Order Spatial Grid      │
-                      │  - Fast Slab Ray-AABB Collision        │
-                      │  - Action Stanza Waterfall Engine      │
-                      └───────────────────┬────────────────────┘
-                                          │
-                      ┌───────────────────▼────────────────────┐
-                      │               Ryzom.Core               │
-                      │  - SIMD 3D Math (Vector3f, Quat, AABB) │
-                      │  - Zero-Alloc Span<byte> BitStream     │
-                      │  - LiDAR Voxel Mesh Decimation Engine  │
-                      └────────────────────────────────────────┘
+                      └─────────────┬────────────────────┬─────┘
+                                    │                    │
+        ┌───────────────────────────▼────────┐  ┌────────▼────────────────┐
+        │            Ryzom.Engine            │  │      Ryzom Persistence  │
+        │  - Morton-64 Z-Order Spatial Grid  │  │  - EF Core 8 Context    │
+        │  - 20 Hz Ecology World Tick Loop   │  │  - Account & Character  │
+        │  - Stanza Spell Crafting Grammar   │  │  - Equipment & Bags     │
+        │  - Action Stanza Waterfall Engine  │  └─────────────────────────┘
+        └───────────────────┬────────────────┘
+                            │
+        ┌───────────────────▼────────────────┐
+        │             Ryzom.Core             │
+        │  - SIMD 3D Math (Vector3f, Quat)   │
+        │  - Zero-Alloc Span<byte> BitStream │
+        │  - LiDAR Voxel Mesh Decimation     │
+        │  - Fixed-Point Netcode Quantizer   │
+        └────────────────────────────────────┘
 ```
 
 ---
@@ -45,9 +48,8 @@ This project transitions the legacy 2004 C++98 / NeL (Nevrax Library) monolith i
 ## 🔬 Core Innovations
 
 ### 1. Morton-64 Z-Order Spatial Hashing (`Ryzom.Core.Spatial`)
-* Eliminates pointer-heavy recursive Octrees (`Node->Children[8]`) that cause CPU cache thrashing during mass player battles.
-* 3D coordinates $(x,y,z)$ are bit-interleaved into a single 64-bit integer, guaranteeing that physically adjacent entities reside on **the same CPU cache line**.
-* Enables $O(1)$ spatial radius queries across thousands of active entities.
+* Replaces pointer-heavy recursive Octrees with bit-interleaved 64-bit Morton codes.
+* Entities residing in the same physical voxel share **identical CPU cache lines**, enabling flat memory sweeps during mass PvP raids and herd migrations.
 
 ### 2. LiDAR Point-Cloud & Voxel Mesh Decimation (`Ryzom.Core.Formats`)
 * Applies LiDAR voxel grid centroid filtering to legacy 2004 NeL meshes:
@@ -55,9 +57,16 @@ This project transitions the legacy 2004 C++98 / NeL (Nevrax Library) monolith i
   * Filters out non-manifold degenerate zero-area triangles.
   * Streams WebGPU-ready interleaved vertex buffers (`Pos.xyz`, `Normal.xyz`, `UV.xy`) directly to browser canvas renderers.
 
-### 3. Zero-Allocation Delta Netcode (`Ryzom.Core.Compression`)
-* Fixed-point 3D lattice quantizer packs 12-byte float32 coordinates into **3-to-4 byte delta offsets**.
-* Operates strictly over `Span<byte>` and `ReadOnlySpan<byte>` with zero garbage collector allocations during real-time network ticks.
+### 3. Stanza Spell & Crafting Grammar Engine (`Ryzom.Engine.Stanzas`)
+* Ports Ryzom's legendary modular spell-building system. Players combine action bricks:
+  $$\text{Action} = [\text{Target: AoE}] + [\text{Element: Fire}] + [\text{Range: 25m}] + [\text{Quality: 1..250}]$$
+* Dynamically compiles recipes into executable action payloads with balanced Sap and Stamina resource consumption.
+
+### 4. Deterministic 20 Hz World Loop & Ecology (`Ryzom.Engine.Ecology`)
+* Simulates Atys' dynamic ecosystem: herbivore herds (*Yubos*) graze and wander within bounded territories while predator patrols (*Kitins*) patrol the desert outpost.
+
+### 5. EF Core 8 Character Persistence & Inventory (`Ryzom.Core.Persistence`)
+* Complete domain persistence modeling: Accounts, Characters across four Homin civilizations (Fyros, Matis, Tryker, Zorai), and 8-slot equipment arrays (Head, Chest, Hands, Legs, Feet, MainHand, OffHand) with quality tiers (1–250).
 
 ---
 
@@ -77,42 +86,47 @@ cd RyzomModern
 dotnet restore
 dotnet build --configuration Release --no-restore
 
-# Run automated test suites (14 tests)
+# Run automated test suites (19 tests)
 dotnet test --configuration Release --verbosity normal
 
-# Launch Ryzom Server Gateway
+# Launch Ryzom Server Gateway & 20Hz World Loop
 dotnet run --project Ryzom.Server
 ```
 
-To run the WebGPU client, simply open `Ryzom.Client.Web/index.html` in any modern browser.
+To run the WebGPU client, simply open `Ryzom.Client.Web/index.html` in any browser or visit the live deployment at [kylethiems.github.io/RyzomModern](https://kylethiems.github.io/RyzomModern).
 
 ---
 
 ## 🧪 Automated Test Verification
 
-The test harness covers all foundational 3D mathematical, spatial, netcode, and combat operations:
+The test harness covers all foundational 3D mathematical, spatial, netcode, combat, persistence, and ecology operations:
 
 ```
 Starting test execution, please wait...
 A total of 1 test files matched the specified pattern.
-[xUnit.net 00:00:00.13]   Starting:    Ryzom.Tests
-  Passed Ryzom.Tests.VectorMathTests.Quaternion_RotatesVector90DegreesAroundZ
+[xUnit.net 00:00:00.14]   Starting:    Ryzom.Tests
   Passed Ryzom.Tests.RayAABBCollisionTests.RayHitsBox_ReturnsTrue
-  Passed Ryzom.Tests.LatticeQuantizationTests.PackUnpack10Bit_PreservesBoundedPosition
   Passed Ryzom.Tests.MortonSpatialTests.EncodeDecode_RoundtripsAccurately
+  Passed Ryzom.Tests.VectorMathTests.Quaternion_RotatesVector90DegreesAroundZ
+  Passed Ryzom.Tests.StanzaGrammarTests.CompileRecipe_AreaOfEffect_IncreasesSapCost
+  Passed Ryzom.Tests.LatticeQuantizationTests.PackUnpack10Bit_PreservesBoundedPosition
   Passed Ryzom.Tests.RayAABBCollisionTests.RayMissesBox_ReturnsFalse
   Passed Ryzom.Tests.CombatWaterfallTests.ActionCast_TargetOutOfRange_FailsWithoutCost
   Passed Ryzom.Tests.LatticeQuantizationTests.PackUnpackDelta16Bit_PreservesCentimeterPrecision
   Passed Ryzom.Tests.CombatWaterfallTests.ActionCast_ConsumesSap_AndDamagesTarget
   Passed Ryzom.Tests.CombatWaterfallTests.ActionCast_InsufficientSap_FailsExecution
+  Passed Ryzom.Tests.StanzaGrammarTests.CompileRecipe_ScalesDamageWithQuality
+  Passed Ryzom.Tests.StanzaGrammarTests.CompileRecipe_InvalidQuality_ThrowsOutOfRangeException
   Passed Ryzom.Tests.VectorMathTests.DotAndCrossProducts_SatisfyOrthogonality
   Passed Ryzom.Tests.VectorMathTests.Lerp_InterpolatesAccurately
   Passed Ryzom.Tests.VectorMathTests.VectorAdditionAndLength_BehavesCorrectly
-  Passed Ryzom.Tests.RayAABBCollisionTests.VoxelDecimation_WeldsDuplicateVertices
   Passed Ryzom.Tests.MortonSpatialTests.VoxelSpatialGrid_RadiusQuery_FindsNearbyEntitiesOnly
+  Passed Ryzom.Tests.RayAABBCollisionTests.VoxelDecimation_WeldsDuplicateVertices
+  Passed Ryzom.Tests.EcologySimulationTests.EcologySimulation_HerdsMoveWithinTerritory
+  Passed Ryzom.Tests.PersistenceTests.CharacterPersistence_StoresAndLoadsInventoryAndCoordinates
 
 Test Run Successful.
-Total tests: 14 | Passed: 14 | Failed: 0 | Execution Time: 0.81s
+Total tests: 19 | Passed: 19 | Failed: 0 | Execution Time: 1.84s
 ```
 
 ---
