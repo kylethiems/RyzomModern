@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ryzom Swanson Botanical Ecology & Residual Stumpage 3D</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    .no-select { user-select: none; -webkit-user-select: none; }
+    input[type=range] { accent-color: #10b981; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased p-3 no-select min-h-screen">
+  <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3 mb-3">
+      <div>
+        <h2 class="text-white font-bold text-base flex items-center gap-2">
+          <span>🌲 Atys Living Ecology & Swanson Botanical Taper Engine</span>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">FVS Allometry & Stumpage Appraisal</span>
+        </h2>
+        <p class="text-slate-400 text-xs mt-0.5">Ported from Swanson Bid Pilot timber physics. Replaces static RNG gathering with living stem taper, Mektoub caravan logistics, and Kitin swarm equilibrium.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="px-2.5 py-1 text-xs font-medium rounded border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 transition">◂ Return to Client</a>
+        <button id="btn-harvest" onclick="executeHarvestAction()" class="px-3 py-1 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-500 text-white shadow transition">🪓 Harvest Tree</button>
+      </div>
+    </div>
+
+    <!-- 3D Canvas Viewport -->
+    <div class="relative w-full h-[360px] bg-slate-950 rounded-lg overflow-hidden border border-slate-800 cursor-grab active:cursor-grabbing" id="viewport">
+      <canvas id="gl-canvas" class="w-full h-full block"></canvas>
+
+      <!-- Split Screen Slider Line -->
+      <div id="split-line" class="absolute top-0 bottom-0 w-[2px] bg-white pointer-events-none shadow-[0_0_14px_rgba(255,255,255,1)]" style="left: 50%;">
+        <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-white text-slate-900 rounded-full flex items-center justify-center text-xs font-bold shadow-2xl border border-slate-300">
+          ⇄
+        </div>
+      </div>
+
+      <!-- Left Label: 2004 Legacy -->
+      <div class="absolute top-3 left-3 bg-black/85 backdrop-blur-md px-3 py-1.5 rounded text-xs font-semibold text-rose-400 border border-rose-500/30 pointer-events-none shadow-lg">
+        <div>◀ 2004 Legacy RNG Gathering</div>
+        <div class="text-[10px] text-slate-400 font-mono font-normal">Static Cylinder Trunk | Fixed Flat Drop | Zero Physics</div>
+      </div>
+
+      <!-- Right Label: 2026 Swanson FVS -->
+      <div class="absolute top-3 right-3 bg-black/85 backdrop-blur-md px-3 py-1.5 rounded text-xs font-semibold text-emerald-300 border border-emerald-500/30 pointer-events-none text-right shadow-lg">
+        <div>2026 Swanson FVS Allometry ▶</div>
+        <div class="text-[10px] text-emerald-400 font-mono font-normal">Dynamic Stem Taper e^(-0.025·DBH) | Heartwood Rings | Residual Stumpage</div>
+      </div>
+
+      <!-- Swarm Alert Banner -->
+      <div id="swarm-alert" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 bg-red-950/90 border border-red-500/80 text-red-200 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 backdrop-blur shadow-2xl animate-pulse">
+        <span>⚠️ KITIN HIVE AWAKENING:</span>
+        <span id="swarm-msg">Deforestation exceeded 40%! Elite mandible raiders deployed!</span>
+      </div>
+    </div>
+
+    <!-- Interactive Swanson Controls & Metrics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+      <!-- Control Panel 1: Botanical Parameters -->
+      <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+        <div class="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+          <span>Botanical Allometry (FVS)</span>
+          <span id="label-age" class="text-slate-400 font-mono text-[11px]">Age: 85 yrs</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Trunk Diameter (DBH):</span>
+              <span id="val-dbh" class="font-mono text-emerald-400 font-semibold">58.0"</span>
+            </div>
+            <input type="range" id="input-dbh" min="12" max="110" step="1" value="58" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer">
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Terrain Slope Angle:</span>
+              <span id="val-slope" class="font-mono text-emerald-400 font-semibold">18°</span>
+            </div>
+            <input type="range" id="input-slope" min="0" max="45" step="1" value="18" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer">
+          </div>
+          <div class="pt-2 border-t border-slate-800 space-y-1 font-mono text-[11px]">
+            <div class="flex justify-between text-slate-400">
+              <span>Allometric Height:</span>
+              <span id="stat-height" class="text-slate-200 font-medium">44.6 m</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>FVS Taper Factor:</span>
+              <span id="stat-taper" class="text-slate-200 font-medium">0.235</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Scribner Yield:</span>
+              <span id="stat-yield" class="text-slate-200 font-medium">245 MBF</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Cambium Sap Yield:</span>
+              <span id="stat-sap" class="text-cyan-400 font-medium">42.3 L</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Wood Quality Grade:</span>
+              <span id="stat-grade" class="text-amber-400 font-semibold">Seasoned Heartwood</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control Panel 2: Logistics & Residual Stumpage Valuation -->
+      <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+        <div class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+          <span>Residual Stumpage Appraisal</span>
+          <span class="text-slate-400 font-mono text-[11px]">Swanson Bid Formula</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Caravan Haul Distance:</span>
+              <span id="val-haul" class="font-mono text-amber-400 font-semibold">4.5 km</span>
+            </div>
+            <input type="range" id="input-haul" min="0.5" max="25" step="0.5" value="4.5" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer">
+          </div>
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Harvest Rig Type:</span>
+              <span id="stat-rig" class="font-mono text-cyan-400 font-semibold">Ground Skidding</span>
+            </div>
+            <div class="text-[10px] text-slate-500">Auto-selected based on slope angle (Cable rig on &gt;25°)</div>
+          </div>
+          <div class="pt-2 border-t border-slate-800 space-y-1 font-mono text-[11px]">
+            <div class="flex justify-between text-slate-400">
+              <span>Delivered Pond Value:</span>
+              <span id="cost-pond" class="text-emerald-400 font-medium">+$550.00 / MBF</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Yarding & Felling:</span>
+              <span id="cost-yarding" class="text-rose-400 font-medium">-$106.00 / MBF</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Mektoub Caravan Haul:</span>
+              <span id="cost-haul" class="text-rose-400 font-medium">-$84.83 / MBF</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Guild Tariff & Road Maint:</span>
+              <span id="cost-tariff" class="text-rose-400 font-medium">-$29.25 / MBF</span>
+            </div>
+            <div class="flex justify-between border-t border-slate-800 pt-1 text-xs">
+              <span class="text-slate-200 font-semibold">Net Break-Even Stumpage:</span>
+              <span id="val-stumpage" class="text-amber-400 font-bold">$329.92 / MBF</span>
+            </div>
+            <div class="flex justify-between text-[11px]">
+              <span class="text-slate-400">Total Tree Net Value:</span>
+              <span id="val-tree-profit" class="text-emerald-400 font-bold">$80,830.40</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control Panel 3: Ecological Equilibrium & Kitin Threat -->
+      <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3">
+        <div class="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+          <span>Ecological Arbitrage & Kitin Threat</span>
+          <span id="stat-kami" class="text-cyan-400 font-mono text-[11px]">Kami Favor: 75%</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div>
+            <div class="flex justify-between text-slate-300 mb-1">
+              <span>Regional Forest Depletion:</span>
+              <span id="val-depletion" class="font-mono text-rose-400 font-semibold">18.5%</span>
+            </div>
+            <input type="range" id="input-depletion" min="0" max="90" step="0.5" value="18.5" class="w-full h-1.5 bg-slate-800 rounded appearance-none cursor-pointer">
+          </div>
+          <!-- Gauge Bar -->
+          <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden flex border border-slate-700">
+            <div id="bar-kami" class="bg-emerald-500 h-full transition-all" style="width: 50%;"></div>
+            <div id="bar-karavan" class="bg-amber-500 h-full transition-all" style="width: 30%;"></div>
+            <div id="bar-kitin" class="bg-red-600 h-full transition-all animate-pulse" style="width: 20%;"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>Kami (Nature)</span>
+            <span>Karavan (Industry)</span>
+            <span>Kitin (Raid)</span>
+          </div>
+          <div class="pt-2 border-t border-slate-800 space-y-1 font-mono text-[11px]">
+            <div class="flex justify-between text-slate-400">
+              <span>Standing Biomass:</span>
+              <span id="stat-biomass" class="text-slate-200 font-medium">81.5%</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Kitin Swarm Aggression:</span>
+              <span id="stat-swarm" class="text-emerald-400 font-semibold">1.00x (Docile)</span>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Ecological Status:</span>
+              <span id="stat-eco-state" class="text-emerald-400 font-medium">Equilibrium</span>
+            </div>
+            <div class="mt-2 text-[10px] text-slate-400 leading-tight">
+              Harvesting wood accelerates Karavan industrial output, but clearing >40% standing biomass triggers Kitin swarm hive emergence.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Swanson FVS Botanical Ecology Simulation
+    let dbh = 58;
+    let slope = 18;
+    let haul = 4.5;
+    let depletion = 18.5;
+    let splitPos = 0.5;
+    let isDragging = false;
+    let rotX = 0.2, rotY = -0.4;
+    let lastMouseX = 0, lastMouseY = 0;
+
+    const inputDbh = document.getElementById('input-dbh');
+    const inputSlope = document.getElementById('input-slope');
+    const inputHaul = document.getElementById('input-haul');
+    const inputDepletion = document.getElementById('input-depletion');
+    const splitLine = document.getElementById('split-line');
+    const viewport = document.getElementById('viewport');
+    const canvas = document.getElementById('gl-canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+    inputDbh.addEventListener('input', (e) => { dbh = parseFloat(e.target.value); updateCalculators(); });
+    inputSlope.addEventListener('input', (e) => { slope = parseFloat(e.target.value); updateCalculators(); });
+    inputHaul.addEventListener('input', (e) => { haul = parseFloat(e.target.value); updateCalculators(); });
+    inputDepletion.addEventListener('input', (e) => { depletion = parseFloat(e.target.value); updateCalculators(); });
+
+    // Split-line mouse interaction
+    viewport.addEventListener('mousedown', (e) => {
+      const rect = viewport.getBoundingClientRect();
+      const clickX = (e.clientX - rect.left) / rect.width;
+      if (Math.abs(clickX - splitPos) < 0.05) {
+        isDragging = true;
+      } else {
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      const rect = viewport.getBoundingClientRect();
+      if (isDragging) {
+        splitPos = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width));
+        splitLine.style.left = (splitPos * 100) + '%';
+      } else if (e.buttons === 1) {
+        const dx = e.clientX - lastMouseX;
+        const dy = e.clientY - lastMouseY;
+        rotY += dx * 0.01;
+        rotX = Math.max(-0.6, Math.min(0.8, rotX + dy * 0.01));
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+      }
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    function updateCalculators() {
+      // 1. Botanical Taper FVS calculations
+      const height = 4.5 + 28.0 * Math.log(1.0 + dbh / 10.0);
+      const taperFactor = Math.exp(-0.025 * dbh);
+      const age = Math.round(dbh * 1.45);
+      const volumeMbf = Math.round(0.065 * Math.pow(dbh, 1.85) * (height / 30.0));
+      const sapYield = (dbh * 0.72).toFixed(1);
+
+      let grade = "Green Branchwood";
+      let pondValue = 180;
+      if (dbh >= 75) {
+        grade = "Amber Crystallized";
+        pondValue = 950;
+      } else if (dbh >= 50) {
+        grade = "Seasoned Heartwood";
+        pondValue = 550;
+      } else if (dbh >= 28) {
+        grade = "Flexible Sapwood";
+        pondValue = 320;
+      }
+
+      document.getElementById('val-dbh').innerText = dbh.toFixed(1) + '"';
+      document.getElementById('label-age').innerText = `Age: ${age} yrs`;
+      document.getElementById('val-slope').innerText = slope + '°';
+      document.getElementById('stat-height').innerText = height.toFixed(1) + ' m';
+      document.getElementById('stat-taper').innerText = taperFactor.toFixed(3);
+      document.getElementById('stat-yield').innerText = volumeMbf + ' MBF';
+      document.getElementById('stat-sap').innerText = sapYield + ' L';
+      document.getElementById('stat-grade').innerText = grade;
+
+      // 2. Residual Stumpage Appraisal
+      let yardingCost = 0;
+      let rigName = "Ground Skidding";
+      if (slope > 25) {
+        rigName = "Highlead Cable Rig";
+        yardingCost = 145.0 + (slope - 25) * 4.2;
+      } else {
+        rigName = "Ground Skidding (Mektoub)";
+        yardingCost = 80.0 + (slope / 25.0) * 45.0;
+      }
+      document.getElementById('stat-rig').innerText = rigName;
+
+      const haulCost = haul * 14.50 * (1.0 + (slope / 60.0));
+      const tariffCost = 10.0 + pondValue * 0.035;
+      const netStumpage = Math.max(0, pondValue - yardingCost - haulCost - tariffCost);
+      const totalTreeProfit = netStumpage * volumeMbf;
+
+      document.getElementById('val-haul').innerText = haul.toFixed(1) + ' km';
+      document.getElementById('cost-pond').innerText = '+$' + pondValue.toFixed(2) + ' / MBF';
+      document.getElementById('cost-yarding').innerText = '-$' + yardingCost.toFixed(2) + ' / MBF';
+      document.getElementById('cost-haul').innerText = '-$' + haulCost.toFixed(2) + ' / MBF';
+      document.getElementById('cost-tariff').innerText = '-$' + tariffCost.toFixed(2) + ' / MBF';
+      document.getElementById('val-stumpage').innerText = '$' + netStumpage.toFixed(2) + ' / MBF';
+      document.getElementById('val-tree-profit').innerText = '$' + totalTreeProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      // 3. Ecological Equilibrium & Kitin Threat
+      const biomass = Math.max(0, 100 - depletion);
+      const kamiFavor = Math.round(biomass * 0.9);
+      const karavanFavor = Math.round(depletion * 1.1);
+      let swarmFactor = 1.0;
+      let ecoState = "Equilibrium";
+      let stateColor = "text-emerald-400";
+
+      if (depletion > 65) {
+        swarmFactor = 1.0 + (depletion - 40) * 0.08;
+        ecoState = "Severe Swarm Siege (Level 3)";
+        stateColor = "text-red-500";
+      } else if (depletion > 40) {
+        swarmFactor = 1.0 + (depletion - 40) * 0.05;
+        ecoState = "Hive Awakening (Active Raids)";
+        stateColor = "text-amber-400";
+      }
+
+      document.getElementById('val-depletion').innerText = depletion.toFixed(1) + '%';
+      document.getElementById('stat-biomass').innerText = biomass.toFixed(1) + '%';
+      document.getElementById('stat-kami').innerText = `Kami Favor: ${kamiFavor}%`;
+      document.getElementById('stat-swarm').innerText = `${swarmFactor.toFixed(2)}x (${depletion > 40 ? 'Hostile' : 'Docile'})`;
+      
+      const ecoElem = document.getElementById('stat-eco-state');
+      ecoElem.innerText = ecoState;
+      ecoElem.className = stateColor + ' font-semibold';
+
+      document.getElementById('bar-kami').style.width = kamiFavor + '%';
+      document.getElementById('bar-karavan').style.width = Math.min(50, karavanFavor) + '%';
+      document.getElementById('bar-kitin').style.width = Math.max(5, (swarmFactor - 1.0) * 80) + '%';
+
+      const swarmAlert = document.getElementById('swarm-alert');
+      if (depletion > 40) {
+        swarmAlert.classList.remove('hidden');
+        document.getElementById('swarm-msg').innerText = `Deforestation at ${depletion.toFixed(1)}%! Kitin Hive Awakening: Aggression ${swarmFactor.toFixed(2)}x!`;
+      } else {
+        swarmAlert.classList.add('hidden');
+      }
+    }
+
+    function executeHarvestAction() {
+      depletion = Math.min(90, depletion + 4.5);
+      inputDepletion.value = depletion;
+      updateCalculators();
+      alert(`🪓 Timber Harvest Complete!\n\nVolume: ${document.getElementById('stat-yield').innerText}\nProfit: ${document.getElementById('val-tree-profit').innerText}\nRegional Depletion increased to ${depletion.toFixed(1)}%.`);
+    }
+
+    // WebGL Shaders & Rendering for Tree Comparison
+    const vsSource = `
+      attribute vec3 aPosition;
+      attribute vec3 aNormal;
+      attribute vec2 aUV;
+      uniform mat4 uMatrix;
+      uniform float uTaper;
+      uniform float uIsModern;
+      varying vec3 vNormal;
+      varying vec3 vPos;
+      varying vec2 vUV;
+
+      void main() {
+        vec3 pos = aPosition;
+        if (uIsModern > 0.5) {
+          // Swanson FVS dynamic stem taper curve: r(z) = r0 * (1.0 - z * (1.0 - taper))
+          float hRatio = clamp(pos.y / 4.0, 0.0, 1.0);
+          float radiusScale = mix(1.0, uTaper, pow(hRatio, 0.75));
+          pos.x *= radiusScale;
+          pos.z *= radiusScale;
+          // Organic root flare
+          if (pos.y < 0.6) {
+            float flare = pow(1.0 - (pos.y / 0.6), 2.0) * 0.45;
+            pos.x += pos.x * flare;
+            pos.z += pos.z * flare;
+          }
+        }
+        vNormal = aNormal;
+        vPos = pos;
+        vUV = aUV;
+        gl_Position = uMatrix * vec4(pos, 1.0);
+      }
+    `;
+
+    const fsSource = `
+      precision mediump float;
+      varying vec3 vNormal;
+      varying vec3 vPos;
+      varying vec2 vUV;
+      uniform float uIsModern;
+      uniform float uSplitX;
+      uniform vec2 uResolution;
+
+      void main() {
+        float screenX = gl_FragCoord.x / uResolution.x;
+        // Determine whether this fragment is on the legacy side (left) or Swanson modern side (right)
+        bool isModernSide = screenX > uSplitX;
+
+        vec3 lightDir = normalize(vec3(0.5, 0.8, 0.6));
+        vec3 n = normalize(vNormal);
+
+        if (!isModernSide) {
+          // Legacy 2004 Ryzom rendering: Flat shading, low-poly vertex lighting, muddy uncalibrated DXT1 bark
+          float diff = max(dot(n, lightDir), 0.2);
+          vec3 barkColor = vec3(0.35, 0.25, 0.18);
+          // Banded low precision
+          diff = floor(diff * 4.0) / 4.0;
+          gl_FragColor = vec4(barkColor * diff, 1.0);
+        } else {
+          // Swanson FVS Next-Gen Living Tree rendering:
+          // Concentric growth rings, cambium sap layer, heartwood core, PBR bark microsurface
+          float diff = max(dot(n, lightDir), 0.0);
+          
+          // Cross-section ring pattern
+          float r = length(vPos.xz);
+          float ringPattern = sin(r * 24.0) * 0.08;
+          
+          // Cambium layer glow & resinous sap
+          vec3 heartwood = vec3(0.48, 0.28, 0.14) + ringPattern;
+          vec3 sapwood = vec3(0.72, 0.58, 0.38);
+          vec3 bark = vec3(0.24, 0.16, 0.11) + sin(vPos.y * 30.0 + vUV.x * 20.0) * 0.03;
+
+          vec3 baseColor = mix(heartwood, sapwood, smoothstep(0.4, 0.8, r));
+          if (abs(n.y) < 0.4) {
+            baseColor = bark;
+          }
+
+          // Ambient occlusion at root collar + dual clearcoat highlights
+          float ao = clamp(vPos.y / 1.5, 0.35, 1.0);
+          vec3 viewDir = normalize(vec3(0.0, 0.0, 1.0));
+          vec3 halfVec = normalize(lightDir + viewDir);
+          float spec = pow(max(dot(n, halfVec), 0.0), 32.0) * 0.35;
+
+          vec3 finalColor = (baseColor * (diff * 0.8 + 0.25) + spec) * ao;
+          gl_FragColor = vec4(finalColor, 1.0);
+        }
+      }
+    `;
+
+    function createShader(gl, type, source) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, source);
+      gl.compileShader(s);
+      return s;
+    }
+
+    const program = gl.createProgram();
+    gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vsSource));
+    gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fsSource));
+    gl.linkProgram(program);
+    gl.useProgram(program);
+
+    // Build procedural tree cylinder geometry
+    const segments = 32;
+    const rings = 16;
+    const positions = [];
+    const normals = [];
+    const uvs = [];
+    const indices = [];
+
+    for (let r = 0; r <= rings; r++) {
+      const y = (r / rings) * 4.0;
+      for (let s = 0; s <= segments; s++) {
+        const theta = (s / segments) * Math.PI * 2;
+        const x = Math.cos(theta) * 0.8;
+        const z = Math.sin(theta) * 0.8;
+        positions.push(x, y, z);
+        normals.push(Math.cos(theta), 0, Math.sin(theta));
+        uvs.push(s / segments, r / rings);
+      }
+    }
+
+    for (let r = 0; r < rings; r++) {
+      for (let s = 0; s < segments; s++) {
+        const i0 = r * (segments + 1) + s;
+        const i1 = i0 + 1;
+        const i2 = (r + 1) * (segments + 1) + s;
+        const i3 = i2 + 1;
+        indices.push(i0, i2, i1, i1, i2, i3);
+      }
+    }
+
+    const posBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(program, 'aPosition');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+
+    const normBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+    const aNorm = gl.getAttribLocation(program, 'aNormal');
+    gl.enableVertexAttribArray(aNorm);
+    gl.vertexAttribPointer(aNorm, 3, gl.FLOAT, false, 0, 0);
+
+    const uvBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
+    const aUV = gl.getAttribLocation(program, 'aUV');
+    gl.enableVertexAttribArray(aUV);
+    gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 0, 0);
+
+    const idxBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+    const uMatrix = gl.getUniformLocation(program, 'uMatrix');
+    const uTaper = gl.getUniformLocation(program, 'uTaper');
+    const uIsModern = gl.getUniformLocation(program, 'uIsModern');
+    const uSplitX = gl.getUniformLocation(program, 'uSplitX');
+    const uResolution = gl.getUniformLocation(program, 'uResolution');
+
+    gl.enable(gl.DEPTH_TEST);
+
+    function render() {
+      canvas.width = viewport.clientWidth;
+      canvas.height = viewport.clientHeight;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0.02, 0.03, 0.05, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      // Camera MVP
+      const aspect = canvas.width / canvas.height;
+      const fov = 45 * Math.PI / 180;
+      const near = 0.1, far = 100;
+      const f = 1.0 / Math.tan(fov / 2);
+      
+      const p = new Float32Array([
+        f / aspect, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, (far + near) / (near - far), -1,
+        0, 0, (2 * far * near) / (near - far), 0
+      ]);
+
+      // Rotation & translation matrix
+      const cy = Math.cos(rotY), sy = Math.sin(rotY);
+      const cx = Math.cos(rotX), sx = Math.sin(rotX);
+      const mvp = new Float32Array(16);
+      
+      // Simple lookAt translation to [0, -2, -6]
+      const tx = 0, ty = -1.8, tz = -6.5;
+      mvp[0] = p[0] * cy;
+      mvp[1] = p[5] * sx * sy;
+      mvp[2] = p[10] * -cx * sy;
+      mvp[3] = p[11] * -cx * sy;
+
+      mvp[4] = 0;
+      mvp[5] = p[5] * cx;
+      mvp[6] = p[10] * sx;
+      mvp[7] = p[11] * sx;
+
+      mvp[8] = p[0] * -sy;
+      mvp[9] = p[5] * sx * cy;
+      mvp[10] = p[10] * -cx * cy;
+      mvp[11] = p[11] * -cx * cy;
+
+      mvp[12] = p[0] * tx;
+      mvp[13] = p[5] * ty;
+      mvp[14] = p[10] * tz + p[14];
+      mvp[15] = -tz;
+
+      const taperFactor = Math.exp(-0.025 * dbh);
+
+      gl.uniformMatrix4fv(uMatrix, false, mvp);
+      gl.uniform1f(uTaper, taperFactor);
+      gl.uniform1f(uIsModern, 1.0);
+      gl.uniform1f(uSplitX, splitPos);
+      gl.uniform2f(uResolution, canvas.width, canvas.height);
+
+      gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+
+      requestAnimationFrame(render);
+    }
+
+    updateCalculators();
+    render();
+  </script>
+</body>
+</html>

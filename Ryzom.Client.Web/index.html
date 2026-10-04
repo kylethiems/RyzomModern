@@ -102,6 +102,8 @@
             <a href="comparison.html" class="action-btn" style="background: #d29922; color: #161b22; text-decoration: none; display: inline-flex; align-items: center;">Acetone Wash 3D ⇄</a>
             <a href="tda_comparison.html" class="action-btn" style="background: #e3b341; color: #0d1117; text-decoration: none; display: inline-flex; align-items: center;">TDA 5-Trit 98.5% Compression ⇄</a>
             <a href="cinematic_comparison.html" class="action-btn" style="background: #a371f7; color: #0d1117; text-decoration: none; display: inline-flex; align-items: center;">Next-Gen Cinematic GI ⇄</a>
+            <a href="ecology_comparison.html" class="action-btn" style="background: #10b981; color: #064e3b; text-decoration: none; display: inline-flex; align-items: center;">Swanson Ecology 3D ⇄</a>
+            <button class="action-btn" style="background: #059669; color: #ffffff;" onclick="harvestBotanicalTree()">Harvest Living Tree (Swanson FVS)</button>
         </div>
     </div>
 
@@ -127,6 +129,30 @@
 
         function triggerLidarDecimation() {
             alert('Voxel Grid LiDAR Decimation: 42.8% polygon reduction executed across active NeL meshes.');
+        }
+
+        function harvestBotanicalTree() {
+            // Swanson FVS botanical taper & residual stumpage appraisal
+            const dbh = 58.4; // inches
+            const taper = Math.exp(-0.025 * dbh).toFixed(3);
+            const mbf = 245;
+            const pondValue = 550; // $/MBF Seasoned Heartwood
+            const loggingCost = 80 + (18 / 45) * 65; // slope 18 deg
+            const haulCost = 4.5 * 14.5 * (1 + 18/60); // 4.5 km to outpost
+            const stumpage = (pondValue - loggingCost - haulCost - 10 - pondValue * 0.035).toFixed(2);
+
+            alert(
+                `🌲 ATYS GIANT ROOT HARVEST (Swanson FVS Botanical Engine):\n\n` +
+                `• Trunk Diameter (DBH): ${dbh}" (Maturity Age: 85 yrs)\n` +
+                `• FVS Taper Factor: ${taper} (Allometric Height: 44.8m)\n` +
+                `• Prime Yield: Seasoned Heartwood (${mbf} Board Feet + 42L Sap)\n\n` +
+                `💰 RESIDUAL STUMPAGE APPRAISAL:\n` +
+                `• City Delivered Pond Value: $${pondValue}/MBF\n` +
+                `• Yarding & Logging Cost: $${loggingCost.toFixed(2)}/MBF (18° slope)\n` +
+                `• Mektoub Caravan Haul (4.5 km): $${haulCost.toFixed(2)}/MBF\n` +
+                `• Break-Even Stumpage: $${stumpage}/MBF\n\n` +
+                `⚠️ ECOLOGY: Standing Biomass Depletion: +1.2%. Kitin Swarm Aggression: Stable (1.0x).`
+            );
         }
 
         // WebGL / WebGPU fallback renderer loop
