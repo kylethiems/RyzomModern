@@ -1,0 +1,52 @@
+{
+  "npc_id": "foreman_dax",
+  "base_mood": {
+    "greed": 0.75,
+    "paranoia": 0.40,
+    "vigilance": 0.60
+  },
+  "sensory_inputs": [
+    "timber_harvested",
+    "high_stumpage_value",
+    "deforestation_spike",
+    "kitin_tremor",
+    "player_proximity"
+  ],
+  "affordance_weights": {
+    "AppraiseFelledTimber": {
+      "timber_harvested": 0.95,
+      "high_stumpage_value": 0.85,
+      "deforestation_spike": -0.20,
+      "kitin_tremor": -0.80,
+      "player_proximity": 0.40
+    },
+    "DispatchMektoubCaravan": {
+      "timber_harvested": 0.80,
+      "high_stumpage_value": 0.90,
+      "deforestation_spike": -0.30,
+      "kitin_tremor": -0.70,
+      "player_proximity": 0.30
+    },
+    "WarnKitinPheromones": {
+      "timber_harvested": 0.10,
+      "high_stumpage_value": -0.20,
+      "deforestation_spike": 0.85,
+      "kitin_tremor": 0.45,
+      "player_proximity": 0.30
+    },
+    "SoundOutpostAlarm": {
+      "timber_harvested": -0.50,
+      "high_stumpage_value": -0.50,
+      "deforestation_spike": 0.50,
+      "kitin_tremor": 1.25,
+      "player_proximity": 0.40
+    },
+    "IdlePatrol": {
+      "timber_harvested": -0.30,
+      "high_stumpage_value": -0.30,
+      "deforestation_spike": -0.20,
+      "kitin_tremor": -0.40,
+      "player_proximity": 0.10
+    }
+  }
+}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ryzom Modern — Cloud-Native WebGPU Client</title>
+    <title>Ryzom Modern — Cloud-Native WebGPU Client & Agentic NPCs</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -98,6 +98,51 @@
         .stumpage-title { font-size: 0.82rem; font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; pb: 4px; }
         .stumpage-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-family: monospace; }
 
+        /* Agentic NPC Foreman Dax In-World Speech Bubble */
+        .dax-speech-bubble {
+            position: absolute;
+            top: 16px;
+            right: 320px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid #0284c7;
+            box-shadow: 0 0 20px rgba(2, 132, 199, 0.35);
+            border-radius: 8px;
+            padding: 12px 16px;
+            max-width: 310px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.25s;
+            z-index: 5;
+        }
+        .dax-speech-bubble:hover { border-color: #38bdf8; transform: translateY(-2px); box-shadow: 0 0 26px rgba(56, 189, 248, 0.55); }
+        .dax-tag { font-size: 0.7rem; font-weight: 700; color: #f59e0b; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+        .dax-affordance-line { font-size: 0.68rem; color: #94a3b8; font-family: monospace; margin-top: 5px; border-top: 1px solid #1e293b; padding-top: 4px; }
+
+        /* Agentic NPC Inspector Drawer Modal */
+        .npc-inspector-modal {
+            position: absolute;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            height: 100%;
+            background: rgba(11, 15, 25, 0.96);
+            backdrop-filter: blur(16px);
+            border-left: 1px solid #334155;
+            box-shadow: -8px 0 32px rgba(0,0,0,0.7);
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .npc-inspector-modal.open { right: 0; }
+        .inspector-header { padding: 14px 18px; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; }
+        .inspector-tabs { display: flex; background: #0f172a; border-bottom: 1px solid #1e293b; }
+        .tab-btn { flex: 1; padding: 9px 8px; font-size: 0.72rem; font-weight: 600; color: #94a3b8; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; background: rgba(56, 189, 248, 0.08); }
+        .inspector-content { flex: 1; overflow-y: auto; padding: 14px 18px; font-family: monospace; font-size: 0.74rem; color: #cbd5e1; white-space: pre-wrap; line-height: 1.5; }
+        .inspector-footer { padding: 10px 18px; border-top: 1px solid #1e293b; display: flex; gap: 8px; background: #0f172a; }
+
         /* Bottom Controls Bar */
         .controls {
             position: absolute;
@@ -159,7 +204,6 @@
             100% { opacity: 0; transform: translate(-50%, -90px) scale(1.0); }
         }
 
-        /* Instruction badge */
         .instruction-tag {
             position: absolute;
             bottom: 74px;
@@ -179,7 +223,7 @@
 <body>
     <header>
         <div class="logo">⚡ RYZOM MODERN — ATYS LIVING 3D ECOSYSTEM</div>
-        <div class="telemetry" id="telemetry">Netcode: Morton-64 Lattice Delta | 60.0 FPS | Swanson FVS Active</div>
+        <div class="telemetry" id="telemetry">Netcode: Morton-64 Lattice Delta | 60.0 FPS | Agentic NPC Active</div>
     </header>
 
     <div id="canvas-container">
@@ -208,6 +252,16 @@
             <div class="target-details">DBH: 58.4" | FVS Taper: 0.235 | Volume: 245 MBF | CLICK OR PRESS BUTTON TO HARVEST</div>
         </div>
 
+        <!-- Agentic NPC Foreman Dax Speech Bubble -->
+        <div id="dax-speech" class="dax-speech-bubble" onclick="openNpcInspector()">
+            <div class="dax-tag">
+                <span>🤖 Agentic NPC: Foreman Dax</span>
+                <span style="font-size: 0.65rem; color: #38bdf8;">[INSPECT BRAIN]</span>
+            </div>
+            <div id="dax-text">"Keep your blades sharp and your eyes on the sand dunes."</div>
+            <div class="dax-affordance-line">Active: <span id="dax-affordance" style="color: #38bdf8; font-weight: bold;">IdlePatrol</span> (Score: <span id="dax-score">0.10</span>) ⚙️ Click to Inspect</div>
+        </div>
+
         <!-- Swanson Residual Stumpage Breakdown -->
         <div class="stumpage-card" id="stumpage-card">
             <div class="stumpage-title">
@@ -224,11 +278,36 @@
             <div style="margin-top: 6px; font-size: 0.68rem; color: #64748b;">Kitin Swarm Aggression: 1.00x (Stable)</div>
         </div>
 
-        <div class="instruction-tag">🖱️ Click & Drag to Orbit 3D Camera | Click Tree to Harvest with Swanson Economics</div>
+        <!-- Agentic NPC Inspector Drawer Modal -->
+        <div id="npc-inspector" class="npc-inspector-modal">
+            <div class="inspector-header">
+                <div>
+                    <h3 style="color: #38bdf8; font-size: 0.95rem;">🤖 Agentic NPC Brain Inspector</h3>
+                    <div style="font-size: 0.72rem; color: #94a3b8;">Anthropic Markdown Setup + Topological Neural Map</div>
+                </div>
+                <button onclick="closeNpcInspector()" style="background:none; border:none; color:#cbd5e1; font-size:1.2rem; cursor:pointer;">✕</button>
+            </div>
+            <div class="inspector-tabs">
+                <button id="tab-btn-persona" class="tab-btn active" onclick="switchTab('persona')">PERSONA.md</button>
+                <button id="tab-btn-affordances" class="tab-btn" onclick="switchTab('affordances')">AFFORDANCES.md</button>
+                <button id="tab-btn-neural" class="tab-btn" onclick="switchTab('neural')">NEURAL_MAP.json</button>
+                <button id="tab-btn-memory" class="tab-btn" onclick="switchTab('memory')">MEMORY.md (Live)</button>
+            </div>
+            <div class="inspector-content" id="inspector-body">
+                <!-- dynamic content rendered here -->
+            </div>
+            <div class="inspector-footer">
+                <button onclick="simulateTremorEvent()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">⚠️ Inject Kitin Tremor</button>
+                <button onclick="simulateHarvestStimulus()" style="background:#059669; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">🪓 Ingest Timber Event</button>
+            </div>
+        </div>
+
+        <div class="instruction-tag">🖱️ Click & Drag to Orbit 3D Camera | Click Tree to Harvest | Click Foreman Dax to Inspect Brain</div>
 
         <!-- Controls -->
         <div class="controls">
             <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
+            <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector()">🤖 Inspect Agentic NPC (Foreman Dax)</button>
             <button class="action-btn" onclick="castAction('Fireball', 25, 150)">Cast Fireball (25 Sap)</button>
             <button class="action-btn" style="background: #1f6feb;" onclick="castAction('Aimed Shot', 40, 100)">Aimed Shot (40 Stamina)</button>
             <button class="action-btn" style="background: #8957e5;" onclick="triggerLidarDecimation()">Trigger Voxel Decimation</button>
@@ -242,9 +321,180 @@
     <script>
         let currentHp = 1000, currentSap = 500, currentStam = 800;
         let harvestCount = 0;
-        let treeHealth = 100;
-        let isChopping = false;
-        let chopTime = 0;
+        let activeTab = 'persona';
+
+        // Foreman Dax Agentic Sensory State & Episodic Memory
+        const daxSensory = {
+            timber_harvested: 0.0,
+            high_stumpage_value: 0.0,
+            deforestation_spike: 0.0,
+            kitin_tremor: 0.0,
+            player_proximity: 0.85
+        };
+
+        const daxWeights = {
+            AppraiseFelledTimber: { timber_harvested: 0.95, high_stumpage_value: 0.85, deforestation_spike: -0.20, kitin_tremor: -0.80, player_proximity: 0.40 },
+            DispatchMektoubCaravan: { timber_harvested: 0.80, high_stumpage_value: 0.90, deforestation_spike: -0.30, kitin_tremor: -0.70, player_proximity: 0.30 },
+            WarnKitinPheromones: { timber_harvested: 0.10, high_stumpage_value: -0.20, deforestation_spike: 0.85, kitin_tremor: 0.45, player_proximity: 0.30 },
+            SoundOutpostAlarm: { timber_harvested: -0.50, high_stumpage_value: -0.50, deforestation_spike: 0.50, kitin_tremor: 1.25, player_proximity: 0.40 },
+            IdlePatrol: { timber_harvested: -0.30, high_stumpage_value: -0.30, deforestation_spike: -0.20, kitin_tremor: -0.40, player_proximity: 0.10 }
+        };
+
+        const daxEpisodicMemory = [
+            `[14:45:00 UTC] Shift commenced at Pyr Outpost Gate. Mektoub pens secured.`,
+            `[14:48:00 UTC] Loggers dispatched toward mature heartwood root stand (DBH ~58").`,
+            `[14:50:00 UTC] Standing regional biomass steady at 81.5%. No swarm tremors detected.`
+        ];
+
+        function evaluateDaxAffordances(contextTokens = {}) {
+            let bestAffordance = "IdlePatrol";
+            let bestScore = -999;
+            const ranked = [];
+
+            for (const [name, w] of Object.entries(daxWeights)) {
+                const score = (w.timber_harvested * daxSensory.timber_harvested) +
+                              (w.high_stumpage_value * daxSensory.high_stumpage_value) +
+                              (w.deforestation_spike * daxSensory.deforestation_spike) +
+                              (w.kitin_tremor * daxSensory.kitin_tremor) +
+                              (w.player_proximity * daxSensory.player_proximity);
+                ranked.push({ name, score });
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestAffordance = name;
+                }
+            }
+
+            ranked.sort((a, b) => b.score - a.score);
+
+            const volume = contextTokens.volume || "245";
+            const grade = contextTokens.grade || "Seasoned Heartwood";
+            const profit = contextTokens.profit || "80,830";
+            const haul = contextTokens.haul || "84.83";
+            const km = contextTokens.km || "4.5";
+
+            let dialogue = "Keep your blades sharp and your eyes on the sand dunes.";
+            if (bestAffordance === "AppraiseFelledTimber") {
+                dialogue = `By the Great Root! That's ${volume} MBF of ${grade}. I'll buy it for $${profit} delivered to the Pyr outpost!`;
+            } else if (bestAffordance === "DispatchMektoubCaravan") {
+                dialogue = `Rigging harness on two heavy Mektoubs. Haul cost is $${haul}/MBF for the ${km}km transit.`;
+            } else if (bestAffordance === "WarnKitinPheromones") {
+                dialogue = "Halt the blades! The soil is trembling. You've stripped too much root bark—the Kitin swarm is stirring!";
+            } else if (bestAffordance === "SoundOutpostAlarm") {
+                dialogue = "ALARM! Mandibles breaching the surface! Outpost militia to arms!";
+            }
+
+            document.getElementById('dax-text').innerText = `"${dialogue}"`;
+            document.getElementById('dax-affordance').innerText = bestAffordance;
+            document.getElementById('dax-score').innerText = bestScore.toFixed(2);
+
+            return { bestAffordance, bestScore, dialogue, ranked };
+        }
+
+        function triggerDaxReaction(eventName, mbf, profit, grade) {
+            daxSensory.timber_harvested = 1.0;
+            daxSensory.high_stumpage_value = Math.min(1.0, mbf / 260);
+            daxSensory.deforestation_spike = Math.min(1.0, harvestCount * 0.15);
+            daxSensory.kitin_tremor = harvestCount > 3 ? Math.min(1.0, (harvestCount - 3) * 0.35) : 0.0;
+
+            const timeStr = new Date().toISOString().substring(11, 19) + ' UTC';
+            daxEpisodicMemory.push(`[${timeStr}] Event '${eventName}': Volume=${mbf} MBF, Profit=$${profit}. Stimuli: Timber=${daxSensory.timber_harvested.toFixed(2)}, Tremor=${daxSensory.kitin_tremor.toFixed(2)}`);
+
+            evaluateDaxAffordances({ volume: mbf, profit: profit, grade: grade });
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function openNpcInspector() {
+            document.getElementById('npc-inspector').classList.add('open');
+            renderInspectorContent();
+        }
+
+        function closeNpcInspector() {
+            document.getElementById('npc-inspector').classList.remove('open');
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-btn-${tab}`).classList.add('active');
+            renderInspectorContent();
+        }
+
+        function renderInspectorContent() {
+            const body = document.getElementById('inspector-body');
+            if (activeTab === 'persona') {
+                body.innerHTML = `
+<span style="color:#38bdf8;"># NPC Persona: Foreman Dax (Fyros Outpost Timber Overseer)</span>
+
+<span style="color:#f59e0b;">## Core Identity</span>
+• <b>Name:</b> Dax the Bark-Carver
+• <b>Role:</b> Regional Timber Overseer & Mektoub Logistics Master
+• <b>Allegiance:</b> Karavan Industrial Syndicate (High Trade Value, Medium Kami Disregard)
+• <b>Temperament:</b> Pragmatic, profit-driven, hyper-vigilant regarding Kitin swarm tremors.
+
+<span style="color:#f59e0b;">## Motivation & Value Matrix</span>
+• <b>Top Priority:</b> Securing high-grade timber (Seasoned Heartwood, Amber Crystallized) for Fyros fortifications.
+• <b>Secondary Priority:</b> Maintaining caravan route safety along rugged 18° mountain inclines.
+• <b>Phobia / Dread:</b> Kitin hive awakenings and subterranean mandibles destroying Mektoub pack beasts.
+
+<span style="color:#f59e0b;">## Active Sensory Input Vector</span>
+• Timber Harvested:     <b>${daxSensory.timber_harvested.toFixed(2)}</b>
+• High Stumpage Value:  <b>${daxSensory.high_stumpage_value.toFixed(2)}</b>
+• Deforestation Spike:  <b>${daxSensory.deforestation_spike.toFixed(2)}</b>
+• Kitin Tremor:         <b>${daxSensory.kitin_tremor.toFixed(2)}</b>
+• Player Proximity:     <b>${daxSensory.player_proximity.toFixed(2)}</b>
+`;
+            } else if (activeTab === 'affordances') {
+                const evalResult = evaluateDaxAffordances();
+                let rankedHtml = evalResult.ranked.map(r => `• <b>${r.name}:</b> Utility Score = <span style="color:${r.score > 1.0 ? '#10b981':'#94a3b8'}">${r.score.toFixed(3)}</span>`).join('\n');
+                body.innerHTML = `
+<span style="color:#38bdf8;"># Registered Affordances & Dynamic Utility Rankings</span>
+
+<span style="color:#f59e0b;">## Active Selection</span>
+Current Winning Action: <span style="color:#10b981; font-weight:bold;">${evalResult.bestAffordance}</span> (Utility: ${evalResult.bestScore.toFixed(3)})
+
+<span style="color:#f59e0b;">## Ranked Affordance Priority (Topological Dot-Product)</span>
+${rankedHtml}
+
+<span style="color:#f59e0b;">## Available Method Signatures</span>
+1. <b>AppraiseFelledTimber()</b> — Felled logs trigger volume appraisal and cash buy-order.
+2. <b>DispatchMektoubCaravan()</b> — Routes pack beasts across mountain path ($14.50/MBF/km).
+3. <b>WarnKitinPheromones()</b> — Deforestation >40% triggers environmental emergency.
+4. <b>SoundOutpostAlarm()</b> — Seismic tremor triggers militia mobilization.
+5. <b>IdlePatrol()</b> — Low-stimulus default horizon survey.
+`;
+            } else if (activeTab === 'neural') {
+                body.innerHTML = `
+<span style="color:#38bdf8;"># NEURAL_MAP.json (Zero-Host Topological Matrix)</span>
+
+${JSON.stringify({
+    npc_id: "foreman_dax",
+    sensory_inputs: Object.keys(daxSensory),
+    current_stimuli: daxSensory,
+    affordance_weights: daxWeights
+}, null, 2)}
+`;
+            } else if (activeTab === 'memory') {
+                body.innerHTML = `
+<span style="color:#38bdf8;"># MEMORY.md (Live Episodic Event Stream)</span>
+
+${daxEpisodicMemory.join('\n\n')}
+`;
+            }
+        }
+
+        function simulateTremorEvent() {
+            daxSensory.kitin_tremor = 1.0;
+            daxSensory.deforestation_spike = 0.85;
+            daxEpisodicMemory.push(`[${new Date().toISOString().substring(11, 19)} UTC] MANUAL INJECTION: High Seismic Kitin Tremor detected!`);
+            evaluateDaxAffordances();
+            renderInspectorContent();
+        }
+
+        function simulateHarvestStimulus() {
+            harvestBotanicalTree();
+        }
 
         function updateHUD() {
             document.getElementById('hp-val').innerText = `${currentHp} / 1000`;
@@ -287,10 +537,7 @@
             currentStam -= 120;
             updateHUD();
             harvestCount++;
-            isChopping = true;
-            chopTime = Date.now();
 
-            // Swanson FVS dynamic parameters
             const dbh = (58.4 + Math.sin(harvestCount) * 12).toFixed(1);
             const mbf = Math.round(245 + Math.sin(harvestCount) * 40);
             const sapYield = (dbh * 0.72).toFixed(1);
@@ -300,7 +547,6 @@
             const stumpage = (pondValue - loggingCost - haulCost - 10 - pondValue * 0.035).toFixed(2);
             const totalProfit = (stumpage * mbf).toLocaleString('en-US', { maximumFractionDigits: 0 });
 
-            // Spawn floating RPG numbers
             const cx = window.innerWidth * 0.5;
             const cy = window.innerHeight * 0.45;
             spawnFloatingText(`🪓 CHOPPED LIVING ROOT!`, '#ffffff', cx, cy - 60);
@@ -308,12 +554,13 @@
             setTimeout(() => spawnFloatingText(`+${sapYield}L Amber Sap`, '#38bdf8', cx, cy), 400);
             setTimeout(() => spawnFloatingText(`+$${totalProfit} Stumpage Appraisal`, '#10b981', cx, cy + 30), 600);
 
-            // Wood chip particles
             for (let i = 0; i < 35; i++) {
                 spawnParticle();
             }
 
-            // Stamina regen over time
+            // Trigger Foreman Dax's agentic neural mapping!
+            triggerDaxReaction('LivingTreeHarvested', mbf, totalProfit, 'Seasoned Heartwood');
+
             setTimeout(() => {
                 currentStam = Math.min(800, currentStam + 120);
                 updateHUD();
@@ -364,14 +611,14 @@
 
         window.addEventListener('mouseup', () => { isMouseDown = false; });
 
-        // Click directly on canvas to harvest
         canvas.addEventListener('click', (e) => {
-            // Check if click was near center
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width;
             const y = (e.clientY - rect.top) / rect.height;
             if (x > 0.35 && x < 0.65 && y > 0.2 && y < 0.75) {
                 harvestBotanicalTree();
+            } else if (x > 0.65 && x < 0.85 && y > 0.4 && y < 0.85) {
+                openNpcInspector();
             }
         });
 
@@ -382,7 +629,6 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Shaders
         const vsSource = `
             attribute vec3 aPosition;
             attribute vec3 aNormal;
@@ -412,19 +658,16 @@
                 vec3 n = normalize(vNormal);
                 float diff = max(dot(n, uLightDir), 0.15);
                 
-                // PBR specular highlight
                 vec3 viewDir = normalize(vec3(0.0, 0.5, 1.0));
                 vec3 halfVec = normalize(uLightDir + viewDir);
                 float spec = pow(max(dot(n, halfVec), 0.0), 16.0) * 0.25;
 
                 vec3 color = vColor * diff + spec;
 
-                // Pulsing glowing amber sap vein
                 if (vColor.g > 0.5 && vColor.r > 0.8 && vColor.b < 0.3) {
                     color += vec3(1.0, 0.7, 0.1) * uAmberPulse;
                 }
 
-                // Ambient occlusion at base
                 float ao = clamp(vPos.y * 0.5 + 0.3, 0.4, 1.0);
                 gl_FragColor = vec4(color * ao, 1.0);
             }
@@ -443,7 +686,6 @@
         gl.linkProgram(program);
         gl.useProgram(program);
 
-        // Build procedural 3D Living Tree (Stem Taper Trunk + Root Buttresses + Foliage Canopy)
         const vertices = [];
         const normals = [];
         const colors = [];
@@ -466,11 +708,9 @@
             const y0 = (r / trunkRings) * trunkHeight;
             const y1 = ((r + 1) / trunkRings) * trunkHeight;
 
-            // Swanson FVS Taper curve: r(y) = r0 * exp(-0.025 * dbh * (y/H))
             const taper0 = Math.exp(-0.25 * (y0 / trunkHeight));
             const taper1 = Math.exp(-0.25 * (y1 / trunkHeight));
 
-            // Root flare at ground
             const flare0 = y0 < 0.8 ? Math.pow(1.0 - y0 / 0.8, 2.0) * 0.8 : 0;
             const flare1 = y1 < 0.8 ? Math.pow(1.0 - y1 / 0.8, 2.0) * 0.8 : 0;
 
@@ -489,10 +729,9 @@
                 const nx = Math.cos((a0 + a1) * 0.5);
                 const nz = Math.sin((a0 + a1) * 0.5);
 
-                // Bark texture color with amber sap veins
                 let c = [0.38, 0.24, 0.16];
                 if ((s === 6 || s === 18) && y0 > 1.0 && y0 < 3.2) {
-                    c = [0.98, 0.68, 0.15]; // Glowing Amber Sap Crystal Vein
+                    c = [0.98, 0.68, 0.15];
                 } else if ((s + r) % 2 === 0) {
                     c = [0.32, 0.20, 0.14];
                 }
@@ -501,7 +740,7 @@
             }
         }
 
-        // 2. Giant Foliage Canopy Spheres
+        // 2. Foliage Canopy Spheres
         function addFoliageCluster(cx, cy, cz, rad, col) {
             const lats = 8, lons = 12;
             for (let i = 0; i < lats; i++) {
@@ -524,14 +763,13 @@
             }
         }
 
-        // Add 5 lush Atys canopy crowns
         addFoliageCluster(0, 5.2, 0, 2.2, [0.12, 0.55, 0.28]);
         addFoliageCluster(1.4, 4.6, 0.8, 1.6, [0.15, 0.62, 0.32]);
         addFoliageCluster(-1.3, 4.4, -0.6, 1.5, [0.10, 0.50, 0.25]);
         addFoliageCluster(0.6, 4.8, -1.4, 1.4, [0.18, 0.65, 0.35]);
         addFoliageCluster(-0.8, 4.7, 1.2, 1.5, [0.14, 0.58, 0.30]);
 
-        // 3. Ground Terrain Grid (Atys Bark Continent)
+        // 3. Ground Terrain Grid
         const groundSize = 14;
         const groundSegs = 14;
         for (let gx = -groundSegs/2; gx < groundSegs/2; gx++) {
@@ -547,16 +785,25 @@
         }
 
         // 4. Stylized Fyros Outpost Warrior Avatar (standing facing tree)
-        function addAvatar(ax, ay, az) {
-            // Body torso
+        function addWarriorAvatar(ax, ay, az) {
             addQuad([ax-0.2, ay+0.4, az+0.15], [ax+0.2, ay+0.4, az+0.15], [ax+0.2, ay+1.1, az+0.15], [ax-0.2, ay+1.1, az+0.15], [0,0,1], [0.85, 0.28, 0.15]);
-            // Head
             addQuad([ax-0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.4, az+0.1], [ax-0.12, ay+1.4, az+0.1], [0,0,1], [0.92, 0.75, 0.60]);
-            // Harvester Poleaxe handle & blade
             addQuad([ax+0.25, ay+0.1, az], [ax+0.29, ay+0.1, az], [ax+0.29, ay+1.6, az], [ax+0.25, ay+1.6, az], [1,0,0], [0.6, 0.45, 0.25]);
             addQuad([ax+0.29, ay+1.35, az], [ax+0.55, ay+1.45, az], [ax+0.55, ay+1.6, az], [ax+0.29, ay+1.6, az], [0,1,0], [0.2, 0.8, 0.9]);
         }
-        addAvatar(0, 0, 2.2);
+        addWarriorAvatar(0, 0, 2.2);
+
+        // 5. Stylized Foreman Dax (Karavan Overseer Avatar standing at right)
+        function addForemanDaxAvatar(dx, dy, dz) {
+            // Gold & amber Karavan overseer robe
+            addQuad([dx-0.22, dy+0.35, dz+0.15], [dx+0.22, dy+0.35, dz+0.15], [dx+0.22, dy+1.15, dz+0.15], [dx-0.22, dy+1.15, dz+0.15], [0,0,1], [0.92, 0.70, 0.15]);
+            // Head with overseer visor
+            addQuad([dx-0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.42, dz+0.1], [dx-0.12, dy+1.42, dz+0.1], [0,0,1], [0.88, 0.72, 0.58]);
+            addQuad([dx-0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.36, dz+0.12], [dx-0.13, dy+1.36, dz+0.12], [0,0,1], [0.2, 0.8, 1.0]);
+            // Surveyor clipboard & quill
+            addQuad([dx-0.35, dy+0.6, dz+0.2], [dx-0.15, dy+0.6, dz+0.2], [dx-0.15, dy+0.9, dz+0.2], [dx-0.35, dy+0.9, dz+0.2], [0,0,1], [0.95, 0.95, 0.90]);
+        }
+        addForemanDaxAvatar(2.0, 0, 1.6);
 
         // Upload geometry buffers
         const posBuf = gl.createBuffer();
@@ -597,7 +844,6 @@
             gl.clearColor(0.04, 0.06, 0.09, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            // Camera matrix
             const aspect = canvas.width / canvas.height;
             const fov = 45 * Math.PI / 180;
             const near = 0.1, far = 100;
@@ -610,7 +856,6 @@
                 0, 0, (2 * far * near) / (near - far), 0
             ]);
 
-            // Orbit rotation around tree center (y = 2.5)
             const cy = Math.cos(rotY), sy = Math.sin(rotY);
             const cx = Math.cos(rotX), sx = Math.sin(rotX);
             const mvp = new Float32Array(16);
@@ -646,6 +891,7 @@
         }
 
         render();
+        evaluateDaxAffordances();
     </script>
 </body>
 </html>
