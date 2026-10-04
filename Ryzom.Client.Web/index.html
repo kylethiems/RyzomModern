@@ -336,6 +336,7 @@
             <div class="inspector-tabs">
                 <button id="tab-btn-persona" class="tab-btn active" onclick="switchTab('persona')">PERSONA.md</button>
                 <button id="tab-btn-somatic" class="tab-btn" onclick="switchTab('somatic')">SOMATIC.md (Scars)</button>
+                <button id="tab-btn-lifecycle" class="tab-btn" onclick="switchTab('lifecycle')">TIME_DILATION.md</button>
                 <button id="tab-btn-affordances" class="tab-btn" onclick="switchTab('affordances')">AFFORDANCES.md</button>
                 <button id="tab-btn-neural" class="tab-btn" onclick="switchTab('neural')">NEURAL_MAP.json</button>
                 <button id="tab-btn-memory" class="tab-btn" onclick="switchTab('memory')">MEMORY.md</button>
@@ -344,24 +345,26 @@
                 <!-- dynamic content rendered here -->
             </div>
             <div class="inspector-footer">
-                <button onclick="ambushCaravanAndInflictSlash()" style="background:#b91c1c; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:700;">💥 Ambush Caravan (Inflict Scar)</button>
-                <button onclick="harvestVillageTreeAndTriggerEcosystem()" style="background:#15803d; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:700;">🪓 Clear-Cut Village Trees (Displace Fauna)</button>
-                <button onclick="allowEcosystemRecovery()" style="background:#0d9488; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">🌱 Ecological Recovery</button>
+                <button onclick="fastForwardCareerYears(5)" style="background:#4338ca; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:700;">⏩ Time-Dilate +5 Yrs Career</button>
+                <button onclick="resetCareerAging()" style="background:#475569; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">⏪ Reset Youth (Age 20)</button>
+                <button onclick="ambushCaravanAndInflictSlash()" style="background:#b91c1c; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:700;">💥 Ambush Caravan</button>
+                <button onclick="harvestVillageTreeAndTriggerEcosystem()" style="background:#15803d; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:700;">🪓 Clear-Cut Village</button>
             </div>
         </div>
 
-        <div class="instruction-tag">🖱️ Click & Drag to Orbit | Click Tree to Harvest | Click Foreman Dax to Inspect Brain & Biome Shifts</div>
+        <div class="instruction-tag">🖱️ Click & Drag to Orbit | Click Tree to Harvest | Click Foreman Dax to Inspect Brain & Time-Dilation Aging</div>
 
         <!-- Controls -->
         <div class="controls">
             <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
-            <button class="action-btn" style="background: #15803d;" onclick="harvestVillageTreeAndTriggerEcosystem()">🪓 Clear-Cut Village Grove (Trigger Migration)</button>
-            <button class="action-btn" style="background: #0d9488;" onclick="allowEcosystemRecovery()">🌱 Allow Ecological Regrowth</button>
-            <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector()">🤖 Inspect Agentic Brains</button>
+            <button class="action-btn" style="background: #4338ca;" onclick="openNpcInspector(); switchTab('lifecycle')">⏩ Time-Dilation Training (Age NPCs)</button>
+            <button class="action-btn" style="background: #15803d;" onclick="harvestVillageTreeAndTriggerEcosystem()">🪓 Clear-Cut Village Grove</button>
+            <button class="action-btn" style="background: #0d9488;" onclick="allowEcosystemRecovery()">🌱 Allow Regrowth</button>
+            <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector()">🤖 Inspect Brains</button>
             <button class="action-btn" style="background: #e11d48;" onclick="swingHeavyBladeHypertrophy()">⚔️ Swing Greatsword (+Arm Hypertrophy)</button>
-            <button class="action-btn" style="background: #ea580c;" onclick="castElementalSpell('Fire')">🔥 Cast Fire (Amber Flame Eyes)</button>
-            <button class="action-btn" style="background: #0284c7;" onclick="castElementalSpell('Cold')">❄️ Cast Cold (Cyan Frost Eyes)</button>
-            <button class="action-btn" style="background: #7c3aed;" onclick="castElementalSpell('Shock')">⚡ Cast Shock (Purple Ion Eyes)</button>
+            <button class="action-btn" style="background: #ea580c;" onclick="castElementalSpell('Fire')">🔥 Cast Fire (Flame Eyes)</button>
+            <button class="action-btn" style="background: #0284c7;" onclick="castElementalSpell('Cold')">❄️ Cast Cold (Cyan Eyes)</button>
+            <button class="action-btn" style="background: #7c3aed;" onclick="castElementalSpell('Shock')">⚡ Cast Shock (Purple Eyes)</button>
             <a href="comparison.html" class="action-btn" style="background: #d29922; color: #161b22;">Acetone Wash 3D ⇄</a>
             <a href="tda_comparison.html" class="action-btn" style="background: #e3b341; color: #0d1117;">TDA 5-Trit ⇄</a>
             <a href="cinematic_comparison.html" class="action-btn" style="background: #a371f7; color: #0d1117;">Cinematic GI ⇄</a>
@@ -425,6 +428,75 @@
             morphology.spellTier = morphology.totalCasts >= 15 ? 3 : (morphology.totalCasts >= 6 ? 2 : (morphology.totalCasts >= 2 ? 1 : 0));
             updateMorphologyUI();
             spawnFloatingText(`✨ Cast ${element}! Eyes ignite with ${element} glow!`, '#38bdf8', window.innerWidth * 0.45, window.innerHeight * 0.4);
+        }
+
+        // Time-Dilation Career Training Model (Allometric NPC Lifecycle Simulation)
+        let careerAgingYears = 0.0; // 0.0 to 45.0 years beyond base age 20 (Age 20 -> 65)
+
+        function getDaxCareerMorphology(years) {
+            const effectiveAge = 20.0 + years;
+            // 35 swings per day over years
+            const totalSwings = years * 365.25 * 35;
+            const armProgress = 1.0 - Math.exp(-0.0000045 * totalSwings);
+            const armScale = 1.0 + (0.35 * armProgress);
+
+            // Sun-weathered epidermal patina from 6.5h desert UV exposure / day
+            const uvHours = years * 365.25 * 6.5;
+            const skinWeathering = Math.min(1.0, 1.0 - Math.exp(-0.000028 * uvHours));
+
+            // Hair follicle melanin depletion (onset at age 35, fully silvered by 62)
+            let hairGreying = 0.0;
+            if (effectiveAge > 35.0) {
+                hairGreying = Math.min(1.0, (effectiveAge - 35.0) / 27.0);
+            }
+
+            // Micro-scars accumulated from 0.45 skirmishes / year
+            const microScars = Math.floor(years * 0.45);
+
+            // Postural compression (-0.24% height per year after age 40)
+            const posturalCompression = Math.min(0.06, Math.max(0.0, (effectiveAge - 40.0) * 0.0024));
+
+            return {
+                effectiveAge,
+                totalSwings,
+                armScale,
+                skinWeathering,
+                hairGreying,
+                microScars,
+                posturalCompression
+            };
+        }
+
+        function setCareerYears(val) {
+            careerAgingYears = parseFloat(val);
+            const morph = getDaxCareerMorphology(careerAgingYears);
+            morphology.armScale = morph.armScale;
+            updateMorphologyUI();
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function fastForwardCareerYears(delta) {
+            careerAgingYears = Math.min(45.0, Math.max(0.0, careerAgingYears + delta));
+            const morph = getDaxCareerMorphology(careerAgingYears);
+            morphology.armScale = morph.armScale;
+            updateMorphologyUI();
+            spawnFloatingText(`⏩ TIME-DILATION: +${delta} Yrs! Age: ${morph.effectiveAge.toFixed(0)} | Greying: ${(morph.hairGreying*100).toFixed(0)}%`, '#818cf8', window.innerWidth * 0.5, window.innerHeight * 0.35);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function resetCareerAging() {
+            careerAgingYears = 0.0;
+            const morph = getDaxCareerMorphology(0);
+            morphology.armScale = morph.armScale;
+            updateMorphologyUI();
+            spawnFloatingText("⏪ RESET YOUTH: Restored to Age 20 (Neophyte)", '#38bdf8', window.innerWidth * 0.5, window.innerHeight * 0.35);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
         }
 
         // Somatic Biological Recovery Model (Swanson Allometric Healing Curve)
@@ -840,6 +912,11 @@
 
         function switchTab(tab) {
             activeTab = tab;
+            if (tab === 'lifecycle' && currentEntity !== 'dax') {
+                currentEntity = 'dax';
+                document.querySelectorAll('#entity-btn-dax, #entity-btn-village, #entity-btn-frontier').forEach(b => b.classList.remove('active'));
+                document.getElementById('entity-btn-dax').classList.add('active');
+            }
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`tab-btn-${tab}`).classList.add('active');
             renderInspectorContent();
@@ -1086,6 +1163,45 @@ ${JSON.stringify({
 
 ${daxEpisodicMemory.join('\n\n')}
 `;
+            } else if (activeTab === 'lifecycle') {
+                const morph = getDaxCareerMorphology(careerAgingYears);
+                body.innerHTML = `
+<span style="color:#38bdf8;"># TIME_DILATION.md: Emergent NPC Career Lifecycle & Aging Simulation</span>
+
+<span style="color:#f59e0b;">## Allometric Career Profile & Biological Markers</span>
+• <b>Chronological Age:</b> <span style="color:#818cf8; font-weight:bold;">${morph.effectiveAge.toFixed(1)} Solar Years</span> (Base Age: 20.0 + ${careerAgingYears.toFixed(1)} Yrs Dilated)
+• <b>Career Archetype:</b> Fyros Outpost Timber Overseer & Caravan Guard
+• <b>Dominant Arm Hypertrophy:</b> <span style="color:#10b981; font-weight:bold;">${morph.armScale.toFixed(2)}x (+${((morph.armScale - 1.0)*100).toFixed(1)}% Volume)</span>
+• <b>Cumulative Lifetime Swings:</b> ${Math.round(morph.totalSwings).toLocaleString()} heavy axe/blade swings
+• <b>Epidermal Weathering Patina:</b> ${(morph.skinWeathering * 100).toFixed(1)}% (Pyr Desert Sun UV Exposure)
+• <b>Follicle Melanin Depletion:</b> <span style="color:${morph.hairGreying > 0.5 ? '#e2e8f0' : (morph.hairGreying > 0.0 ? '#fde68a' : '#94a3b8')}; font-weight:bold;">${(morph.hairGreying * 100).toFixed(1)}% Silvering</span> (Onset Age 35.0, Full at 62.0)
+• <b>Accumulated Micro-Scars:</b> ${morph.microScars} abrasions (0.45 skirmishes/year with Kitin scouts)
+• <b>Postural Spine Compression:</b> -${(morph.posturalCompression * 100).toFixed(1)}% height adjustment
+
+<div style="background:#0f172a; padding:12px; border-radius:6px; margin:14px 0; border:1px solid #312e81;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:bold;">
+        <span style="color:#c7d2fe;">Fast-Forward NPC Career Time-Dilation:</span>
+        <span style="color:#818cf8;">+${careerAgingYears.toFixed(1)} Years (Age ${morph.effectiveAge.toFixed(1)})</span>
+    </div>
+    <input type="range" min="0" max="45" step="0.5" value="${careerAgingYears}" oninput="setCareerYears(this.value)" style="width:100%; height:6px; accent-color:#818cf8; cursor:pointer;">
+    <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#94a3b8; margin-top:3px;">
+        <span>Age 20 (Neophyte)</span>
+        <span>Age 35 (Silvering Onset)</span>
+        <span>Age 50 (Seasoned Veteran)</span>
+        <span>Age 65 (Elder Master)</span>
+    </div>
+</div>
+
+<span style="color:#f59e0b;">## Time-Dilation Career Routine Script</span>
+• <b>Daily Occupational Burden:</b> 35 Greatsword/Axe swings/day at Pyr Outpost
+• <b>Atmospheric Exposure:</b> 6.5 hours/day arid desert sunlight (UV index 8.5)
+• <b>Combat Frequency:</b> 0.45 skirmishes/year escorting Karavan Mektoubs
+• <b>Asymptotic Growth Rate:</b> λ = 4.5 × 10⁻⁶ per swing (Subtle, non-dramatic continuous saturation)
+
+<span style="color:#f59e0b;">## Real-Time 3D Morphological Shaders</span>
+• <b>Vertex Shader Uniforms:</b> <code>uArmScale: ${morph.armScale.toFixed(2)}</code>, <code>uHairGreying: ${morph.hairGreying.toFixed(2)}</code>, <code>uSkinWeathering: ${morph.skinWeathering.toFixed(2)}</code>
+• <b>Non-Dramatic Player Micro-Step:</b> Live player swings increment volume by <b>+0.00004</b>/swing, enabling seamless fine-tuning against time-dilated NPC career benchmarks!
+`;
             }
         }
 
@@ -1236,12 +1352,14 @@ ${daxEpisodicMemory.join('\n\n')}
             attribute vec3 aPosition;
             attribute vec3 aNormal;
             attribute vec3 aColor;
-            attribute float aTag; // 0=normal, 1=scar, 2=eye, 3=arm
+            attribute float aTag; // 0=normal, 1=scar, 2=eye, 3=arm, 4=hair
             uniform mat4 uMatrix;
             uniform vec3 uScarTint;
             uniform vec3 uOcularTint;
             uniform float uOcularGlow;
             uniform float uArmScale;
+            uniform float uHairGreying;
+            uniform float uSkinWeathering;
             varying vec3 vNormal;
             varying vec3 vPos;
             varying vec3 vColor;
@@ -1253,16 +1371,24 @@ ${daxEpisodicMemory.join('\n\n')}
                 vec3 pos = aPosition;
                 vec3 col = aColor;
 
-                if (aTag > 2.5) {
-                    // Arm & Weapon Hypertrophy scaling around arm root (X: 0.28, Z: 0.08)
-                    pos.x = (pos.x - 0.28) * uArmScale + 0.28;
-                    pos.z = (pos.z - 0.08) * uArmScale + 0.08;
+                if (aTag > 3.5) {
+                    // Hair & Beard Follicle Melanin Depletion / Silvering
+                    col = mix(aColor, vec3(0.86, 0.88, 0.94), clamp(uHairGreying, 0.0, 1.0));
+                } else if (aTag > 2.5) {
+                    // Arm & Weapon Hypertrophy scaling around local shoulder pivot
+                    float armRootX = pos.x > 1.0 ? 2.28 : 0.28;
+                    float armRootZ = pos.x > 1.0 ? 1.72 : 2.20;
+                    pos.x = (pos.x - armRootX) * uArmScale + armRootX;
+                    pos.z = (pos.z - armRootZ) * uArmScale + armRootZ;
                 } else if (aTag > 1.5) {
                     // Ocular Elemental Shift
                     col = mix(aColor, uOcularTint, clamp(uOcularGlow, 0.0, 1.0));
                 } else if (aTag > 0.5) {
                     // Somatic Battle Scar
                     col = uScarTint;
+                } else if (uSkinWeathering > 0.01 && aColor.r > 0.8 && aColor.g > 0.65) {
+                    // Epidermal Sun Patina (Arid Desert UV exposure)
+                    col = mix(aColor, vec3(0.68, 0.46, 0.32), uSkinWeathering * 0.50);
                 }
 
                 vPos = pos;
@@ -1431,15 +1557,28 @@ ${daxEpisodicMemory.join('\n\n')}
         }
         addWarriorAvatar(0, 0, 2.2);
 
-        // 5. Stylized Foreman Dax (Karavan Overseer with dynamic battle scar)
+        // 5. Stylized Foreman Dax (Karavan Overseer with dynamic battle scar & career aging)
         function addForemanDaxAvatar(dx, dy, dz) {
+            // Robes
             addQuad([dx-0.22, dy+0.35, dz+0.15], [dx+0.22, dy+0.35, dz+0.15], [dx+0.22, dy+1.15, dz+0.15], [dx-0.22, dy+1.15, dz+0.15], [0,0,1], [0.92, 0.70, 0.15], 0.0);
+            // Head/Face (skin patinated by sun)
             addQuad([dx-0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.42, dz+0.1], [dx-0.12, dy+1.42, dz+0.1], [0,0,1], [0.88, 0.72, 0.58], 0.0);
+            // Visor / Optics
             addQuad([dx-0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.36, dz+0.12], [dx-0.13, dy+1.36, dz+0.12], [0,0,1], [0.2, 0.8, 1.0], 0.0);
+            // Karavan shoulder plates
             addQuad([dx-0.35, dy+0.6, dz+0.2], [dx-0.15, dy+0.6, dz+0.2], [dx-0.15, dy+0.9, dz+0.2], [dx-0.35, dy+0.9, dz+0.2], [0,0,1], [0.95, 0.95, 0.90], 0.0);
 
             // Somatic Chest Slash Scar Polygon (tagged with tag = 1.0)
             addQuad([dx-0.16, dy+0.68, dz+0.17], [dx+0.12, dy+0.92, dz+0.17], [dx+0.10, dy+0.97, dz+0.17], [dx-0.18, dy+0.73, dz+0.17], [0,0,1], [0.92, 0.70, 0.15], 1.0);
+
+            // Dominant Right Arm & Felling Axe (tagged with tag = 3.0 -> Career Hypertrophy)
+            addQuad([dx+0.22, dy+0.35, dz+0.12], [dx+0.32, dy+0.35, dz+0.12], [dx+0.32, dy+1.15, dz+0.12], [dx+0.22, dy+1.15, dz+0.12], [1,0,0], [0.88, 0.72, 0.58], 3.0);
+            addQuad([dx+0.25, dy+0.15, dz+0.1], [dx+0.29, dy+0.15, dz+0.1], [dx+0.29, dy+1.35, dz+0.1], [dx+0.25, dy+1.35, dz+0.1], [0,0,1], [0.42, 0.28, 0.18], 3.0);
+            addQuad([dx+0.22, dy+1.20, dz+0.1], [dx+0.42, dy+1.20, dz+0.1], [dx+0.40, dy+1.38, dz+0.1], [dx+0.24, dy+1.38, dz+0.1], [0,0,1], [0.72, 0.75, 0.80], 3.0);
+
+            // Hair & Veteran Beard (tagged with tag = 4.0 -> Silvering with Career Aging)
+            addQuad([dx-0.13, dy+1.38, dz+0.09], [dx+0.13, dy+1.38, dz+0.09], [dx+0.13, dy+1.46, dz+0.09], [dx-0.13, dy+1.46, dz+0.09], [0,0,1], [0.28, 0.18, 0.12], 4.0);
+            addQuad([dx-0.10, dy+1.12, dz+0.11], [dx+0.10, dy+1.12, dz+0.11], [dx+0.10, dy+1.22, dz+0.11], [dx-0.10, dy+1.22, dz+0.11], [0,0,1], [0.28, 0.18, 0.12], 4.0);
         }
         addForemanDaxAvatar(2.0, 0, 1.6);
 
@@ -1532,6 +1671,8 @@ ${daxEpisodicMemory.join('\n\n')}
         const uOcularTint = gl.getUniformLocation(program, 'uOcularTint');
         const uOcularGlow = gl.getUniformLocation(program, 'uOcularGlow');
         const uArmScale = gl.getUniformLocation(program, 'uArmScale');
+        const uHairGreying = gl.getUniformLocation(program, 'uHairGreying');
+        const uSkinWeathering = gl.getUniformLocation(program, 'uSkinWeathering');
 
         gl.enable(gl.DEPTH_TEST);
 
@@ -1585,6 +1726,10 @@ ${daxEpisodicMemory.join('\n\n')}
             gl.uniform3f(uOcularTint, morphology.ocularColor[0], morphology.ocularColor[1], morphology.ocularColor[2]);
             gl.uniform1f(uOcularGlow, morphology.ocularIntensity);
             gl.uniform1f(uArmScale, morphology.armScale);
+
+            const daxCareer = getDaxCareerMorphology(careerAgingYears);
+            gl.uniform1f(uHairGreying, daxCareer.hairGreying);
+            gl.uniform1f(uSkinWeathering, daxCareer.skinWeathering);
 
             // Natural resting decay of magic charge
             morphology.ocularIntensity = Math.max(0.0, morphology.ocularIntensity - 0.001);
