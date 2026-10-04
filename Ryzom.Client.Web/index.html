@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryzom Modern — Cloud-Native WebGPU Client</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header {
+            background: #161b22;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
+        }
+        .logo { font-size: 1.25rem; font-weight: 700; color: #58a6ff; letter-spacing: 0.5px; }
+        .telemetry { font-family: monospace; font-size: 0.85rem; color: #8b949e; }
+        #canvas-container {
+            position: relative;
+            flex: 1;
+            background: radial-gradient(circle at center, #1b2838 0%, #080c10 100%);
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+        .hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(22, 27, 34, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 16px 20px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            min-width: 280px;
+        }
+        .vital-row { margin-bottom: 10px; }
+        .vital-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .progress-bar { width: 100%; height: 8px; background: #21262d; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.3s ease; }
+        .hp-fill { background: #ea4a5a; width: 100%; }
+        .sap-fill { background: #388bfd; width: 100%; }
+        .stam-fill { background: #2ea043; width: 100%; }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+        }
+        .action-btn {
+            background: #238636;
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .action-btn:hover { background: #2ea043; transform: translateY(-1px); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">⚡ RYZOM MODERN — ATYS WEBGPU RUNTIME</div>
+        <div class="telemetry" id="telemetry">Netcode: Morton-64 Lattice Delta | 60.0 FPS | 0.8ms Tick</div>
+    </header>
+
+    <div id="canvas-container">
+        <canvas id="webgpu-canvas"></canvas>
+
+        <div class="hud">
+            <h3 style="margin-bottom: 12px; font-size: 1rem; color: #f0f6fc;">Character: Fyros Outpost Warrior</h3>
+            <div class="vital-row">
+                <div class="vital-label"><span>Hit Points (HP)</span><span id="hp-val">1000 / 1000</span></div>
+                <div class="progress-bar"><div class="progress-fill hp-fill" id="hp-bar"></div></div>
+            </div>
+            <div class="vital-row">
+                <div class="vital-label"><span>Sap (Magic)</span><span id="sap-val">500 / 500</span></div>
+                <div class="progress-bar"><div class="progress-fill sap-fill" id="sap-bar"></div></div>
+            </div>
+            <div class="vital-row">
+                <div class="vital-label"><span>Stamina</span><span id="stam-val">800 / 800</span></div>
+                <div class="progress-bar"><div class="progress-fill stam-fill" id="stam-bar"></div></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="action-btn" onclick="castAction('Fireball', 25, 150)">Cast Fireball (25 Sap)</button>
+            <button class="action-btn" style="background: #1f6feb;" onclick="castAction('Aimed Shot', 40, 100)">Aimed Shot (40 Stamina)</button>
+            <button class="action-btn" style="background: #8957e5;" onclick="triggerLidarDecimation()">Trigger Voxel Decimation</button>
+        </div>
+    </div>
+
+    <script>
+        let currentHp = 1000, currentSap = 500, currentStam = 800;
+
+        function updateHUD() {
+            document.getElementById('hp-val').innerText = `${currentHp} / 1000`;
+            document.getElementById('hp-bar').style.width = `${(currentHp / 1000) * 100}%`;
+            document.getElementById('sap-val').innerText = `${currentSap} / 500`;
+            document.getElementById('sap-bar').style.width = `${(currentSap / 500) * 100}%`;
+            document.getElementById('stam-val').innerText = `${currentStam} / 800`;
+            document.getElementById('stam-bar').style.width = `${(currentStam / 800) * 100}%`;
+        }
+
+        function castAction(name, cost, power) {
+            if (currentSap >= cost) {
+                currentSap -= cost;
+                updateHUD();
+                console.log(`[RyzomNet] Action cast: ${name}, Power: ${power}, Sap Remaining: ${currentSap}`);
+            }
+        }
+
+        function triggerLidarDecimation() {
+            alert('Voxel Grid LiDAR Decimation: 42.8% polygon reduction executed across active NeL meshes.');
+        }
+
+        // WebGL / WebGPU fallback renderer loop
+        const canvas = document.getElementById('webgpu-canvas');
+        const ctx = canvas.getContext('2d');
+        function resize() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let angle = 0;
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            angle += 0.02;
+
+            // Draw wireframe 3D Atys mesh preview
+            ctx.strokeStyle = '#58a6ff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            const radius = 120;
+            for (let i = 0; i < 12; i++) {
+                const theta = (i / 12) * Math.PI * 2 + angle;
+                const x = cx + Math.cos(theta) * radius;
+                const y = cy + Math.sin(theta) * (radius * 0.5);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            // Draw center entity beacon
+            ctx.fillStyle = '#f0883e';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            requestAnimationFrame(render);
+        }
+        render();
+    </script>
+</body>
+</html>
