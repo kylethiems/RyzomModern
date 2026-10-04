@@ -14,73 +14,180 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            user-select: none;
         }
         header {
             background: #161b22;
-            padding: 12px 24px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #30363d;
+            z-index: 10;
         }
-        .logo { font-size: 1.25rem; font-weight: 700; color: #58a6ff; letter-spacing: 0.5px; }
-        .telemetry { font-family: monospace; font-size: 0.85rem; color: #8b949e; }
+        .logo { font-size: 1.15rem; font-weight: 700; color: #58a6ff; letter-spacing: 0.5px; }
+        .telemetry { font-family: monospace; font-size: 0.82rem; color: #8b949e; }
         #canvas-container {
             position: relative;
             flex: 1;
-            background: radial-gradient(circle at center, #1b2838 0%, #080c10 100%);
+            background: #06090e;
+            overflow: hidden;
         }
-        canvas { width: 100%; height: 100%; display: block; }
-        .hud {
+        canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+        canvas:active { cursor: grabbing; }
+
+        /* Player HUD */
+        .hud-left {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(22, 27, 34, 0.85);
-            backdrop-filter: blur(8px);
-            padding: 16px 20px;
+            top: 16px;
+            left: 16px;
+            background: rgba(22, 27, 34, 0.88);
+            backdrop-filter: blur(10px);
+            padding: 14px 18px;
             border-radius: 8px;
             border: 1px solid #30363d;
-            min-width: 280px;
+            min-width: 260px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            pointer-events: none;
         }
-        .vital-row { margin-bottom: 10px; }
-        .vital-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; }
-        .progress-bar { width: 100%; height: 8px; background: #21262d; border-radius: 4px; overflow: hidden; }
+        .vital-row { margin-bottom: 8px; }
+        .vital-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 3px; display: flex; justify-content: space-between; }
+        .progress-bar { width: 100%; height: 7px; background: #21262d; border-radius: 4px; overflow: hidden; }
         .progress-fill { height: 100%; transition: width 0.3s ease; }
         .hp-fill { background: #ea4a5a; width: 100%; }
         .sap-fill { background: #388bfd; width: 100%; }
         .stam-fill { background: #2ea043; width: 100%; }
+
+        /* Target HUD (Top Center) */
+        .target-hud {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(22, 27, 34, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #10b981;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+            text-align: center;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .target-hud:hover { border-color: #34d399; box-shadow: 0 0 24px rgba(16, 185, 129, 0.45); }
+        .target-name { font-size: 0.9rem; font-weight: 700; color: #10b981; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .target-details { font-size: 0.72rem; color: #94a3b8; font-family: monospace; margin-top: 2px; }
+
+        /* Swanson Residual Stumpage Panel (Right) */
+        .stumpage-card {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            padding: 14px 18px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            width: 290px;
+            font-size: 0.78rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+        .stumpage-title { font-size: 0.82rem; font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; pb: 4px; }
+        .stumpage-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-family: monospace; }
+
+        /* Bottom Controls Bar */
         .controls {
             position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            max-width: 95vw;
+            z-index: 10;
         }
         .action-btn {
             background: #238636;
             color: #ffffff;
-            border: none;
-            padding: 10px 18px;
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 9px 15px;
             border-radius: 6px;
             font-weight: 600;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
         }
-        .action-btn:hover { background: #2ea043; transform: translateY(-1px); }
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.15); }
+        .action-btn-primary {
+            background: #10b981;
+            color: #064e3b;
+            font-size: 0.85rem;
+            border: 1px solid #34d399;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+            font-weight: 700;
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 22px rgba(16, 185, 129, 0.8); }
+        }
+
+        /* 3D In-World Harvest Float Text */
+        .harvest-floater {
+            position: absolute;
+            pointer-events: none;
+            font-family: -apple-system, sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 12px currentColor;
+            transform: translate(-50%, -50%);
+            animation: float-up 1.8s forwards ease-out;
+        }
+        @keyframes float-up {
+            0% { opacity: 1; transform: translate(-50%, 0) scale(0.9); }
+            50% { opacity: 1; transform: translate(-50%, -40px) scale(1.15); }
+            100% { opacity: 0; transform: translate(-50%, -90px) scale(1.0); }
+        }
+
+        /* Instruction badge */
+        .instruction-tag {
+            position: absolute;
+            bottom: 74px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #475569;
+            color: #cbd5e1;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            backdrop-filter: blur(6px);
+        }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">⚡ RYZOM MODERN — ATYS WEBGPU RUNTIME</div>
-        <div class="telemetry" id="telemetry">Netcode: Morton-64 Lattice Delta | 60.0 FPS | 0.8ms Tick</div>
+        <div class="logo">⚡ RYZOM MODERN — ATYS LIVING 3D ECOSYSTEM</div>
+        <div class="telemetry" id="telemetry">Netcode: Morton-64 Lattice Delta | 60.0 FPS | Swanson FVS Active</div>
     </header>
 
     <div id="canvas-container">
         <canvas id="webgpu-canvas"></canvas>
 
-        <div class="hud">
-            <h3 style="margin-bottom: 12px; font-size: 1rem; color: #f0f6fc;">Character: Fyros Outpost Warrior</h3>
+        <!-- Player Vital HUD -->
+        <div class="hud-left">
+            <h3 style="margin-bottom: 10px; font-size: 0.92rem; color: #f0f6fc;">Fyros Outpost Warrior</h3>
             <div class="vital-row">
                 <div class="vital-label"><span>Hit Points (HP)</span><span id="hp-val">1000 / 1000</span></div>
                 <div class="progress-bar"><div class="progress-fill hp-fill" id="hp-bar"></div></div>
@@ -90,25 +197,54 @@
                 <div class="progress-bar"><div class="progress-fill sap-fill" id="sap-bar"></div></div>
             </div>
             <div class="vital-row">
-                <div class="vital-label"><span>Stamina</span><span id="stam-val">800 / 800</span></div>
+                <div class="vital-label"><span>Stamina (Harvest)</span><span id="stam-val">800 / 800</span></div>
                 <div class="progress-bar"><div class="progress-fill stam-fill" id="stam-bar"></div></div>
             </div>
         </div>
 
+        <!-- Target Frame -->
+        <div class="target-hud" onclick="harvestBotanicalTree()">
+            <div class="target-name"><span>🌲 Living Atys Heartwood Root</span> <span style="font-size: 0.7rem; background: #064e3b; color: #34d399; padding: 2px 6px; border-radius: 4px;">TARGET LOCKED</span></div>
+            <div class="target-details">DBH: 58.4" | FVS Taper: 0.235 | Volume: 245 MBF | CLICK OR PRESS BUTTON TO HARVEST</div>
+        </div>
+
+        <!-- Swanson Residual Stumpage Breakdown -->
+        <div class="stumpage-card" id="stumpage-card">
+            <div class="stumpage-title">
+                <span>SWANSON APPRAISAL</span>
+                <span id="card-yield" class="text-emerald-400">245 MBF</span>
+            </div>
+            <div class="stumpage-row"><span style="color: #94a3b8;">Delivered Pond Value:</span><span style="color: #34d399;">+$550.00/MBF</span></div>
+            <div class="stumpage-row"><span style="color: #94a3b8;">Yarding (18° Slope):</span><span style="color: #f87171;">-$106.00/MBF</span></div>
+            <div class="stumpage-row"><span style="color: #94a3b8;">Mektoub Haul (4.5 km):</span><span style="color: #f87171;">-$84.83/MBF</span></div>
+            <div class="stumpage-row"><span style="color: #94a3b8;">Tariff & Road Maint:</span><span style="color: #f87171;">-$29.25/MBF</span></div>
+            <div style="border-top: 1px solid #334155; margin: 6px 0;"></div>
+            <div class="stumpage-row" style="font-weight: 700;"><span style="color: #f1f5f9;">Break-Even Stumpage:</span><span style="color: #fbbf24;">$329.92/MBF</span></div>
+            <div class="stumpage-row" style="font-weight: 700;"><span style="color: #f1f5f9;">Total Tree Value:</span><span style="color: #10b981;">$80,830.40</span></div>
+            <div style="margin-top: 6px; font-size: 0.68rem; color: #64748b;">Kitin Swarm Aggression: 1.00x (Stable)</div>
+        </div>
+
+        <div class="instruction-tag">🖱️ Click & Drag to Orbit 3D Camera | Click Tree to Harvest with Swanson Economics</div>
+
+        <!-- Controls -->
         <div class="controls">
+            <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
             <button class="action-btn" onclick="castAction('Fireball', 25, 150)">Cast Fireball (25 Sap)</button>
             <button class="action-btn" style="background: #1f6feb;" onclick="castAction('Aimed Shot', 40, 100)">Aimed Shot (40 Stamina)</button>
             <button class="action-btn" style="background: #8957e5;" onclick="triggerLidarDecimation()">Trigger Voxel Decimation</button>
-            <a href="comparison.html" class="action-btn" style="background: #d29922; color: #161b22; text-decoration: none; display: inline-flex; align-items: center;">Acetone Wash 3D ⇄</a>
-            <a href="tda_comparison.html" class="action-btn" style="background: #e3b341; color: #0d1117; text-decoration: none; display: inline-flex; align-items: center;">TDA 5-Trit 98.5% Compression ⇄</a>
-            <a href="cinematic_comparison.html" class="action-btn" style="background: #a371f7; color: #0d1117; text-decoration: none; display: inline-flex; align-items: center;">Next-Gen Cinematic GI ⇄</a>
-            <a href="ecology_comparison.html" class="action-btn" style="background: #10b981; color: #064e3b; text-decoration: none; display: inline-flex; align-items: center;">Swanson Ecology 3D ⇄</a>
-            <button class="action-btn" style="background: #059669; color: #ffffff;" onclick="harvestBotanicalTree()">Harvest Living Tree (Swanson FVS)</button>
+            <a href="comparison.html" class="action-btn" style="background: #d29922; color: #161b22;">Acetone Wash 3D ⇄</a>
+            <a href="tda_comparison.html" class="action-btn" style="background: #e3b341; color: #0d1117;">TDA 5-Trit ⇄</a>
+            <a href="cinematic_comparison.html" class="action-btn" style="background: #a371f7; color: #0d1117;">Cinematic GI ⇄</a>
+            <a href="ecology_comparison.html" class="action-btn" style="background: #047857; color: #ffffff;">Swanson Ecology 3D ⇄</a>
         </div>
     </div>
 
     <script>
         let currentHp = 1000, currentSap = 500, currentStam = 800;
+        let harvestCount = 0;
+        let treeHealth = 100;
+        let isChopping = false;
+        let chopTime = 0;
 
         function updateHUD() {
             document.getElementById('hp-val').innerText = `${currentHp} / 1000`;
@@ -123,41 +259,122 @@
             if (currentSap >= cost) {
                 currentSap -= cost;
                 updateHUD();
-                console.log(`[RyzomNet] Action cast: ${name}, Power: ${power}, Sap Remaining: ${currentSap}`);
+                spawnFloatingText(`-${cost} Sap: ${name}!`, '#388bfd', window.innerWidth * 0.5, window.innerHeight * 0.4);
             }
         }
 
         function triggerLidarDecimation() {
-            alert('Voxel Grid LiDAR Decimation: 42.8% polygon reduction executed across active NeL meshes.');
+            spawnFloatingText(`-42.8% Polygon Decimation Executed!`, '#a855f7', window.innerWidth * 0.5, window.innerHeight * 0.4);
+        }
+
+        function spawnFloatingText(text, color, x, y) {
+            const el = document.createElement('div');
+            el.className = 'harvest-floater';
+            el.style.color = color;
+            el.style.left = (x + (Math.random() * 60 - 30)) + 'px';
+            el.style.top = (y + (Math.random() * 40 - 20)) + 'px';
+            el.innerText = text;
+            document.getElementById('canvas-container').appendChild(el);
+            setTimeout(() => el.remove(), 1800);
         }
 
         function harvestBotanicalTree() {
-            // Swanson FVS botanical taper & residual stumpage appraisal
-            const dbh = 58.4; // inches
-            const taper = Math.exp(-0.025 * dbh).toFixed(3);
-            const mbf = 245;
-            const pondValue = 550; // $/MBF Seasoned Heartwood
-            const loggingCost = 80 + (18 / 45) * 65; // slope 18 deg
-            const haulCost = 4.5 * 14.5 * (1 + 18/60); // 4.5 km to outpost
-            const stumpage = (pondValue - loggingCost - haulCost - 10 - pondValue * 0.035).toFixed(2);
+            if (currentStam < 120) {
+                spawnFloatingText('Out of Stamina! Rest to recover.', '#ef4444', window.innerWidth * 0.5, window.innerHeight * 0.5);
+                return;
+            }
 
-            alert(
-                `🌲 ATYS GIANT ROOT HARVEST (Swanson FVS Botanical Engine):\n\n` +
-                `• Trunk Diameter (DBH): ${dbh}" (Maturity Age: 85 yrs)\n` +
-                `• FVS Taper Factor: ${taper} (Allometric Height: 44.8m)\n` +
-                `• Prime Yield: Seasoned Heartwood (${mbf} Board Feet + 42L Sap)\n\n` +
-                `💰 RESIDUAL STUMPAGE APPRAISAL:\n` +
-                `• City Delivered Pond Value: $${pondValue}/MBF\n` +
-                `• Yarding & Logging Cost: $${loggingCost.toFixed(2)}/MBF (18° slope)\n` +
-                `• Mektoub Caravan Haul (4.5 km): $${haulCost.toFixed(2)}/MBF\n` +
-                `• Break-Even Stumpage: $${stumpage}/MBF\n\n` +
-                `⚠️ ECOLOGY: Standing Biomass Depletion: +1.2%. Kitin Swarm Aggression: Stable (1.0x).`
-            );
+            currentStam -= 120;
+            updateHUD();
+            harvestCount++;
+            isChopping = true;
+            chopTime = Date.now();
+
+            // Swanson FVS dynamic parameters
+            const dbh = (58.4 + Math.sin(harvestCount) * 12).toFixed(1);
+            const mbf = Math.round(245 + Math.sin(harvestCount) * 40);
+            const sapYield = (dbh * 0.72).toFixed(1);
+            const pondValue = 550;
+            const loggingCost = 80 + (18 / 45) * 65;
+            const haulCost = 4.5 * 14.5 * (1 + 18/60);
+            const stumpage = (pondValue - loggingCost - haulCost - 10 - pondValue * 0.035).toFixed(2);
+            const totalProfit = (stumpage * mbf).toLocaleString('en-US', { maximumFractionDigits: 0 });
+
+            // Spawn floating RPG numbers
+            const cx = window.innerWidth * 0.5;
+            const cy = window.innerHeight * 0.45;
+            spawnFloatingText(`🪓 CHOPPED LIVING ROOT!`, '#ffffff', cx, cy - 60);
+            setTimeout(() => spawnFloatingText(`+${mbf} MBF Seasoned Heartwood`, '#fbbf24', cx, cy - 30), 200);
+            setTimeout(() => spawnFloatingText(`+${sapYield}L Amber Sap`, '#38bdf8', cx, cy), 400);
+            setTimeout(() => spawnFloatingText(`+$${totalProfit} Stumpage Appraisal`, '#10b981', cx, cy + 30), 600);
+
+            // Wood chip particles
+            for (let i = 0; i < 35; i++) {
+                spawnParticle();
+            }
+
+            // Stamina regen over time
+            setTimeout(() => {
+                currentStam = Math.min(800, currentStam + 120);
+                updateHUD();
+            }, 3500);
         }
 
-        // WebGL / WebGPU fallback renderer loop
+        // Particle system for wood chips and amber sap sparks
+        const particles = [];
+        function spawnParticle() {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 2 + Math.random() * 5;
+            particles.push({
+                x: 0,
+                y: 1.2 + Math.random() * 0.8,
+                z: 0,
+                vx: Math.cos(angle) * speed * 0.04,
+                vy: 0.08 + Math.random() * 0.1,
+                vz: Math.sin(angle) * speed * 0.04,
+                life: 1.0,
+                isSap: Math.random() > 0.4
+            });
+        }
+
+        // 3D WebGL Living Tree & Biome Scene
         const canvas = document.getElementById('webgpu-canvas');
-        const ctx = canvas.getContext('2d');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+        let rotX = 0.25, rotY = -0.6;
+        let lastMouseX = 0, lastMouseY = 0;
+        let isMouseDown = false;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isMouseDown) {
+                const dx = e.clientX - lastMouseX;
+                const dy = e.clientY - lastMouseY;
+                rotY += dx * 0.008;
+                rotX = Math.max(-0.2, Math.min(0.7, rotX + dy * 0.008));
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            }
+        });
+
+        window.addEventListener('mouseup', () => { isMouseDown = false; });
+
+        // Click directly on canvas to harvest
+        canvas.addEventListener('click', (e) => {
+            // Check if click was near center
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
+            if (x > 0.35 && x < 0.65 && y > 0.2 && y < 0.75) {
+                harvestBotanicalTree();
+            }
+        });
+
         function resize() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
@@ -165,35 +382,269 @@
         window.addEventListener('resize', resize);
         resize();
 
-        let angle = 0;
-        function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2;
-            angle += 0.02;
+        // Shaders
+        const vsSource = `
+            attribute vec3 aPosition;
+            attribute vec3 aNormal;
+            attribute vec3 aColor;
+            uniform mat4 uMatrix;
+            varying vec3 vNormal;
+            varying vec3 vPos;
+            varying vec3 vColor;
 
-            // Draw wireframe 3D Atys mesh preview
-            ctx.strokeStyle = '#58a6ff';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            const radius = 120;
-            for (let i = 0; i < 12; i++) {
-                const theta = (i / 12) * Math.PI * 2 + angle;
-                const x = cx + Math.cos(theta) * radius;
-                const y = cy + Math.sin(theta) * (radius * 0.5);
-                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            void main() {
+                vNormal = aNormal;
+                vPos = aPosition;
+                vColor = aColor;
+                gl_Position = uMatrix * vec4(aPosition, 1.0);
             }
-            ctx.closePath();
-            ctx.stroke();
+        `;
 
-            // Draw center entity beacon
-            ctx.fillStyle = '#f0883e';
-            ctx.beginPath();
-            ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-            ctx.fill();
+        const fsSource = `
+            precision mediump float;
+            varying vec3 vNormal;
+            varying vec3 vPos;
+            varying vec3 vColor;
+            uniform vec3 uLightDir;
+            uniform float uAmberPulse;
+
+            void main() {
+                vec3 n = normalize(vNormal);
+                float diff = max(dot(n, uLightDir), 0.15);
+                
+                // PBR specular highlight
+                vec3 viewDir = normalize(vec3(0.0, 0.5, 1.0));
+                vec3 halfVec = normalize(uLightDir + viewDir);
+                float spec = pow(max(dot(n, halfVec), 0.0), 16.0) * 0.25;
+
+                vec3 color = vColor * diff + spec;
+
+                // Pulsing glowing amber sap vein
+                if (vColor.g > 0.5 && vColor.r > 0.8 && vColor.b < 0.3) {
+                    color += vec3(1.0, 0.7, 0.1) * uAmberPulse;
+                }
+
+                // Ambient occlusion at base
+                float ao = clamp(vPos.y * 0.5 + 0.3, 0.4, 1.0);
+                gl_FragColor = vec4(color * ao, 1.0);
+            }
+        `;
+
+        function createShader(gl, type, src) {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, src);
+            gl.compileShader(s);
+            return s;
+        }
+
+        const program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vsSource));
+        gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fsSource));
+        gl.linkProgram(program);
+        gl.useProgram(program);
+
+        // Build procedural 3D Living Tree (Stem Taper Trunk + Root Buttresses + Foliage Canopy)
+        const vertices = [];
+        const normals = [];
+        const colors = [];
+        const indices = [];
+
+        function addQuad(p0, p1, p2, p3, n, c) {
+            const baseIdx = vertices.length / 3;
+            vertices.push(...p0, ...p1, ...p2, ...p3);
+            normals.push(...n, ...n, ...n, ...n);
+            colors.push(...c, ...c, ...c, ...c);
+            indices.push(baseIdx, baseIdx + 1, baseIdx + 2, baseIdx, baseIdx + 2, baseIdx + 3);
+        }
+
+        // 1. Procedural Trunk with FVS Taper & Root Flare
+        const trunkRings = 20;
+        const trunkSegs = 24;
+        const trunkHeight = 5.2;
+
+        for (let r = 0; r < trunkRings; r++) {
+            const y0 = (r / trunkRings) * trunkHeight;
+            const y1 = ((r + 1) / trunkRings) * trunkHeight;
+
+            // Swanson FVS Taper curve: r(y) = r0 * exp(-0.025 * dbh * (y/H))
+            const taper0 = Math.exp(-0.25 * (y0 / trunkHeight));
+            const taper1 = Math.exp(-0.25 * (y1 / trunkHeight));
+
+            // Root flare at ground
+            const flare0 = y0 < 0.8 ? Math.pow(1.0 - y0 / 0.8, 2.0) * 0.8 : 0;
+            const flare1 = y1 < 0.8 ? Math.pow(1.0 - y1 / 0.8, 2.0) * 0.8 : 0;
+
+            const rad0 = (0.75 * taper0) + flare0;
+            const rad1 = (0.75 * taper1) + flare1;
+
+            for (let s = 0; s < trunkSegs; s++) {
+                const a0 = (s / trunkSegs) * Math.PI * 2;
+                const a1 = ((s + 1) / trunkSegs) * Math.PI * 2;
+
+                const p0 = [Math.cos(a0) * rad0, y0, Math.sin(a0) * rad0];
+                const p1 = [Math.cos(a1) * rad0, y0, Math.sin(a1) * rad0];
+                const p2 = [Math.cos(a1) * rad1, y1, Math.sin(a1) * rad1];
+                const p3 = [Math.cos(a0) * rad1, y1, Math.sin(a0) * rad1];
+
+                const nx = Math.cos((a0 + a1) * 0.5);
+                const nz = Math.sin((a0 + a1) * 0.5);
+
+                // Bark texture color with amber sap veins
+                let c = [0.38, 0.24, 0.16];
+                if ((s === 6 || s === 18) && y0 > 1.0 && y0 < 3.2) {
+                    c = [0.98, 0.68, 0.15]; // Glowing Amber Sap Crystal Vein
+                } else if ((s + r) % 2 === 0) {
+                    c = [0.32, 0.20, 0.14];
+                }
+
+                addQuad(p0, p1, p2, p3, [nx, 0.1, nz], c);
+            }
+        }
+
+        // 2. Giant Foliage Canopy Spheres
+        function addFoliageCluster(cx, cy, cz, rad, col) {
+            const lats = 8, lons = 12;
+            for (let i = 0; i < lats; i++) {
+                const theta0 = (i / lats) * Math.PI;
+                const theta1 = ((i + 1) / lats) * Math.PI;
+                for (let j = 0; j < lons; j++) {
+                    const phi0 = (j / lons) * Math.PI * 2;
+                    const phi1 = ((j + 1) / lons) * Math.PI * 2;
+
+                    const p0 = [cx + rad * Math.sin(theta0) * Math.cos(phi0), cy + rad * Math.cos(theta0), cz + rad * Math.sin(theta0) * Math.sin(phi0)];
+                    const p1 = [cx + rad * Math.sin(theta0) * Math.cos(phi1), cy + rad * Math.cos(theta0), cz + rad * Math.sin(theta0) * Math.sin(phi1)];
+                    const p2 = [cx + rad * Math.sin(theta1) * Math.cos(phi1), cy + rad * Math.cos(theta1), cz + rad * Math.sin(theta1) * Math.sin(phi1)];
+                    const p3 = [cx + rad * Math.sin(theta1) * Math.cos(phi0), cy + rad * Math.cos(theta1), cz + rad * Math.sin(theta1) * Math.sin(phi0)];
+
+                    const nx = (p0[0] + p2[0]) * 0.5 - cx;
+                    const ny = (p0[1] + p2[1]) * 0.5 - cy;
+                    const nz = (p0[2] + p2[2]) * 0.5 - cz;
+                    addQuad(p0, p1, p2, p3, [nx, ny, nz], col);
+                }
+            }
+        }
+
+        // Add 5 lush Atys canopy crowns
+        addFoliageCluster(0, 5.2, 0, 2.2, [0.12, 0.55, 0.28]);
+        addFoliageCluster(1.4, 4.6, 0.8, 1.6, [0.15, 0.62, 0.32]);
+        addFoliageCluster(-1.3, 4.4, -0.6, 1.5, [0.10, 0.50, 0.25]);
+        addFoliageCluster(0.6, 4.8, -1.4, 1.4, [0.18, 0.65, 0.35]);
+        addFoliageCluster(-0.8, 4.7, 1.2, 1.5, [0.14, 0.58, 0.30]);
+
+        // 3. Ground Terrain Grid (Atys Bark Continent)
+        const groundSize = 14;
+        const groundSegs = 14;
+        for (let gx = -groundSegs/2; gx < groundSegs/2; gx++) {
+            for (let gz = -groundSegs/2; gz < groundSegs/2; gz++) {
+                const x0 = (gx / (groundSegs/2)) * (groundSize / 2);
+                const x1 = ((gx + 1) / (groundSegs/2)) * (groundSize / 2);
+                const z0 = (gz / (groundSegs/2)) * (groundSize / 2);
+                const z1 = ((gz + 1) / (groundSegs/2)) * (groundSize / 2);
+
+                const c = (gx + gz) % 2 === 0 ? [0.14, 0.18, 0.20] : [0.11, 0.14, 0.17];
+                addQuad([x0, 0, z0], [x1, 0, z0], [x1, 0, z1], [x0, 0, z1], [0, 1, 0], c);
+            }
+        }
+
+        // 4. Stylized Fyros Outpost Warrior Avatar (standing facing tree)
+        function addAvatar(ax, ay, az) {
+            // Body torso
+            addQuad([ax-0.2, ay+0.4, az+0.15], [ax+0.2, ay+0.4, az+0.15], [ax+0.2, ay+1.1, az+0.15], [ax-0.2, ay+1.1, az+0.15], [0,0,1], [0.85, 0.28, 0.15]);
+            // Head
+            addQuad([ax-0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.4, az+0.1], [ax-0.12, ay+1.4, az+0.1], [0,0,1], [0.92, 0.75, 0.60]);
+            // Harvester Poleaxe handle & blade
+            addQuad([ax+0.25, ay+0.1, az], [ax+0.29, ay+0.1, az], [ax+0.29, ay+1.6, az], [ax+0.25, ay+1.6, az], [1,0,0], [0.6, 0.45, 0.25]);
+            addQuad([ax+0.29, ay+1.35, az], [ax+0.55, ay+1.45, az], [ax+0.55, ay+1.6, az], [ax+0.29, ay+1.6, az], [0,1,0], [0.2, 0.8, 0.9]);
+        }
+        addAvatar(0, 0, 2.2);
+
+        // Upload geometry buffers
+        const posBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        const aPos = gl.getAttribLocation(program, 'aPosition');
+        gl.enableVertexAttribArray(aPos);
+        gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+
+        const normBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+        const aNorm = gl.getAttribLocation(program, 'aNormal');
+        gl.enableVertexAttribArray(aNorm);
+        gl.vertexAttribPointer(aNorm, 3, gl.FLOAT, false, 0, 0);
+
+        const colBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+        const aCol = gl.getAttribLocation(program, 'aColor');
+        gl.enableVertexAttribArray(aCol);
+        gl.vertexAttribPointer(aCol, 3, gl.FLOAT, false, 0, 0);
+
+        const idxBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+        const uMatrix = gl.getUniformLocation(program, 'uMatrix');
+        const uLightDir = gl.getUniformLocation(program, 'uLightDir');
+        const uAmberPulse = gl.getUniformLocation(program, 'uAmberPulse');
+
+        gl.enable(gl.DEPTH_TEST);
+
+        let time = 0;
+        function render() {
+            time += 0.03;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.clearColor(0.04, 0.06, 0.09, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            // Camera matrix
+            const aspect = canvas.width / canvas.height;
+            const fov = 45 * Math.PI / 180;
+            const near = 0.1, far = 100;
+            const f = 1.0 / Math.tan(fov / 2);
+
+            const p = new Float32Array([
+                f / aspect, 0, 0, 0,
+                0, f, 0, 0,
+                0, 0, (far + near) / (near - far), -1,
+                0, 0, (2 * far * near) / (near - far), 0
+            ]);
+
+            // Orbit rotation around tree center (y = 2.5)
+            const cy = Math.cos(rotY), sy = Math.sin(rotY);
+            const cx = Math.cos(rotX), sx = Math.sin(rotX);
+            const mvp = new Float32Array(16);
+
+            const tx = 0, ty = -2.2, tz = -9.2;
+            mvp[0] = p[0] * cy;
+            mvp[1] = p[5] * sx * sy;
+            mvp[2] = p[10] * -cx * sy;
+            mvp[3] = p[11] * -cx * sy;
+
+            mvp[4] = 0;
+            mvp[5] = p[5] * cx;
+            mvp[6] = p[10] * sx;
+            mvp[7] = p[11] * sx;
+
+            mvp[8] = p[0] * -sy;
+            mvp[9] = p[5] * sx * cy;
+            mvp[10] = p[10] * -cx * cy;
+            mvp[11] = p[11] * -cx * cy;
+
+            mvp[12] = p[0] * tx;
+            mvp[13] = p[5] * ty;
+            mvp[14] = p[10] * tz + p[14];
+            mvp[15] = -tz;
+
+            gl.uniformMatrix4fv(uMatrix, false, mvp);
+            gl.uniform3f(uLightDir, 0.5, 0.8, 0.6);
+            gl.uniform1f(uAmberPulse, (Math.sin(time * 3.0) + 1.0) * 0.5);
+
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
 
             requestAnimationFrame(render);
         }
+
         render();
     </script>
 </body>
