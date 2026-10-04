@@ -2,7 +2,7 @@
 
 [![.NET 8 CI Pipeline](https://github.com/kylethiems/RyzomModern/actions/workflows/ci.yml/badge.svg)](https://github.com/kylethiems/RyzomModern/actions/workflows/ci.yml)
 [![.NET Core](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
-[![xUnit](https://img.shields.io/badge/tests-19%20passed-brightgreen.svg)](https://github.com/kylethiems/RyzomModern)
+[![xUnit](https://img.shields.io/badge/tests-21%20passed-brightgreen.svg)](https://github.com/kylethiems/RyzomModern)
 [![Graphics](https://img.shields.io/badge/Render-WebGPU%20%2F%20HTML5-orange.svg)](https://github.com/kylethiems/RyzomModern)
 [![Spatial](https://img.shields.io/badge/Spatial-Morton--64%20Z--Order-purple.svg)](https://github.com/kylethiems/RyzomModern)
 [![Live Demo](https://img.shields.io/badge/Demo-Play%20WebGPU-success.svg)](https://kylethiems.github.io/RyzomModern)
