@@ -330,6 +330,7 @@
             <!-- Entity Switcher -->
             <div style="display:flex; background:#0d1117; padding:4px 8px; border-bottom:1px solid #30363d; gap:6px;">
                 <button id="entity-btn-dax" class="tab-btn active" style="font-size:0.75rem; padding:4px 10px;" onclick="switchEntity('dax')">👤 Foreman Dax (NPC)</button>
+                <button id="entity-btn-arena" class="tab-btn" style="font-size:0.75rem; padding:4px 10px;" onclick="switchEntity('arena')">⚔️ Massive PvP Arena (400)</button>
                 <button id="entity-btn-village" class="tab-btn" style="font-size:0.75rem; padding:4px 10px;" onclick="switchEntity('village')">🌲 Verdant Verge (Biome)</button>
                 <button id="entity-btn-frontier" class="tab-btn" style="font-size:0.75rem; padding:4px 10px;" onclick="switchEntity('frontier')">🦂 Prime Roots (Frontier)</button>
             </div>
@@ -337,6 +338,7 @@
                 <button id="tab-btn-persona" class="tab-btn active" onclick="switchTab('persona')">PERSONA.md</button>
                 <button id="tab-btn-somatic" class="tab-btn" onclick="switchTab('somatic')">SOMATIC.md (Scars)</button>
                 <button id="tab-btn-lifecycle" class="tab-btn" onclick="switchTab('lifecycle')">TIME_DILATION.md</button>
+                <button id="tab-btn-relevancy" class="tab-btn" onclick="switchTab('relevancy')">RELEVANCY_FOVEATED.md</button>
                 <button id="tab-btn-affordances" class="tab-btn" onclick="switchTab('affordances')">AFFORDANCES.md</button>
                 <button id="tab-btn-neural" class="tab-btn" onclick="switchTab('neural')">NEURAL_MAP.json</button>
                 <button id="tab-btn-memory" class="tab-btn" onclick="switchTab('memory')">MEMORY.md</button>
@@ -357,6 +359,7 @@
         <!-- Controls -->
         <div class="controls">
             <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
+            <button class="action-btn" style="background: #be185d;" onclick="openNpcInspector(); switchEntity('arena'); switchTab('relevancy');">🎯 FoV Relevancy Culling (PvP)</button>
             <button class="action-btn" style="background: #4338ca;" onclick="openNpcInspector(); switchTab('lifecycle')">⏩ Time-Dilation Training (Age NPCs)</button>
             <button class="action-btn" style="background: #15803d;" onclick="harvestVillageTreeAndTriggerEcosystem()">🪓 Clear-Cut Village Grove</button>
             <button class="action-btn" style="background: #0d9488;" onclick="allowEcosystemRecovery()">🌱 Allow Regrowth</button>
@@ -494,6 +497,93 @@
             morphology.armScale = morph.armScale;
             updateMorphologyUI();
             spawnFloatingText("⏪ RESET YOUTH: Restored to Age 20 (Neophyte)", '#38bdf8', window.innerWidth * 0.5, window.innerHeight * 0.35);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        // Foveated Network Relevancy & Directional AoI Arena State
+        const arenaState = {
+            totalCombatants: 400,
+            playerFovDeg: 80,
+            playerHeadingDeg: 0,
+            combatants: []
+        };
+
+        for (let i = 0; i < 400; i++) {
+            const angle = (i / 400) * Math.PI * 2 + (Math.sin(i * 12.3) * 0.15);
+            const dist = 6 + (i % 25) * 2.8 + Math.cos(i * 4.1) * 2;
+            arenaState.combatants.push({
+                id: 2000 + i,
+                x: dist * Math.sin(angle),
+                z: dist * Math.cos(angle),
+                faction: (i % 2 === 0) ? "Fyros Legion" : "Matis Vanguard"
+            });
+        }
+
+        function evaluateArenaRelevancy(fovDeg, headingDeg) {
+            const headingRad = (headingDeg * Math.PI) / 180;
+            const fwdX = Math.sin(headingRad);
+            const fwdZ = Math.cos(headingRad);
+            const halfFov = fovDeg * 0.5;
+
+            let focal = 0, peripheral = 0, flank = 0, dormant = 0;
+            let totalBandwidthBytes = 0;
+
+            for (let i = 0; i < arenaState.combatants.length; i++) {
+                const c = arenaState.combatants[i];
+                const dist = Math.hypot(c.x, c.z);
+                if (dist > 80.0) {
+                    dormant++;
+                    continue;
+                }
+
+                const dirX = c.x / dist;
+                const dirZ = c.z / dist;
+                const dot = Math.min(1.0, Math.max(-1.0, fwdX * dirX + fwdZ * dirZ));
+                const angleDeg = (Math.acos(dot) * 180) / Math.PI;
+
+                if (angleDeg <= halfFov) {
+                    focal++;
+                    totalBandwidthBytes += (60 * 180); // 60Hz full transforms
+                } else if (angleDeg <= halfFov + 35) {
+                    peripheral++;
+                    totalBandwidthBytes += (30 * 64); // 30Hz quantized deltas
+                } else if (dist <= 18) {
+                    flank++;
+                    totalBandwidthBytes += (10 * 24); // 10Hz proxy audio pings
+                } else {
+                    dormant++; // 0Hz Actor Dormancy (object impermanence)
+                }
+            }
+
+            const unoptimizedBytes = arenaState.combatants.length * 60 * 180;
+            const optKbps = ((totalBandwidthBytes * 8) / 1024).toFixed(1);
+            const unoptKbps = ((unoptimizedBytes * 8) / 1024).toFixed(1);
+            const bwSavingsPct = ((1.0 - (totalBandwidthBytes / unoptimizedBytes)) * 100).toFixed(1);
+            const cpuSavingsPct = ((1.0 - (focal / arenaState.combatants.length)) * 100).toFixed(1);
+
+            return {
+                focal,
+                peripheral,
+                flank,
+                dormant,
+                optKbps,
+                unoptKbps,
+                bwSavingsPct,
+                cpuSavingsPct
+            };
+        }
+
+        function setArenaFov(val) {
+            arenaState.playerFovDeg = parseFloat(val);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function setArenaHeading(val) {
+            arenaState.playerHeadingDeg = parseFloat(val);
             if (document.getElementById('npc-inspector').classList.contains('open')) {
                 renderInspectorContent();
             }
@@ -789,13 +879,17 @@
 
         function switchEntity(ent) {
             currentEntity = ent;
-            document.querySelectorAll('#entity-btn-dax, #entity-btn-village, #entity-btn-frontier').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#entity-btn-dax, #entity-btn-arena, #entity-btn-village, #entity-btn-frontier').forEach(b => b.classList.remove('active'));
             document.getElementById(`entity-btn-${ent}`).classList.add('active');
 
             const somaticBtn = document.getElementById('tab-btn-somatic');
             if (ent === 'dax') {
                 somaticBtn.innerText = "SOMATIC.md (Scars)";
                 somaticBtn.style.display = "block";
+            } else if (ent === 'arena') {
+                somaticBtn.style.display = "none";
+                switchTab('relevancy');
+                return;
             } else if (ent === 'village') {
                 somaticBtn.innerText = "FOREST_HEALTH.md";
                 somaticBtn.style.display = "block";
@@ -912,9 +1006,13 @@
 
         function switchTab(tab) {
             activeTab = tab;
-            if (tab === 'lifecycle' && currentEntity !== 'dax') {
+            if (tab === 'relevancy' && currentEntity !== 'arena') {
+                currentEntity = 'arena';
+                document.querySelectorAll('#entity-btn-dax, #entity-btn-arena, #entity-btn-village, #entity-btn-frontier').forEach(b => b.classList.remove('active'));
+                document.getElementById('entity-btn-arena').classList.add('active');
+            } else if (tab === 'lifecycle' && currentEntity !== 'dax') {
                 currentEntity = 'dax';
-                document.querySelectorAll('#entity-btn-dax, #entity-btn-village, #entity-btn-frontier').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#entity-btn-dax, #entity-btn-arena, #entity-btn-village, #entity-btn-frontier').forEach(b => b.classList.remove('active'));
                 document.getElementById('entity-btn-dax').classList.add('active');
             }
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -924,6 +1022,59 @@
 
         function renderInspectorContent() {
             const body = document.getElementById('inspector-body');
+
+            if (currentEntity === 'arena' || activeTab === 'relevancy') {
+                const rel = evaluateArenaRelevancy(arenaState.playerFovDeg, arenaState.playerHeadingDeg);
+                body.innerHTML = `
+<span style="color:#38bdf8;"># RELEVANCY_FOVEATED.md: Massive PvP Arena Field-of-Vision Culling</span>
+
+<span style="color:#f59e0b;">## 1. What is "Lack of Object Permanence" Called in 3D Game World Rendering?</span>
+In distributed 3D game engines, deliberately removing entities from processing when out of sight is governed by distinct systems:
+
+1. <b>The Visual / GPU Pipeline: Frustum Culling & Occlusion Culling</b>
+   • <b>Frustum Culling:</b> Camera projects a viewing pyramid (Frustum). If an entity's bounding volume falls outside, the GPU drops draw calls entirely—to the graphics card, the mesh ceases to exist.
+   • <b>Occlusion Culling (PVS / Hierarchical Z-Buffer):</b> If an entity is inside the field of view but occluded by walls, terrain, or battlements, geometry is discarded before rasterization.
+   • <b>Foveated Rendering / Variable Rate Shading (VRS):</b> Full shading rate (100%) in the central focus area, downsampled in the periphery, and completely unshaded off-screen.
+
+2. <b>The Server & Processing Pipeline: Directional Network Relevancy & Actor Dormancy</b>
+   • <b>Directional Network Relevancy (Foveated Network Replication):</b> Rather than an omnidirectional radius, the server projects a directional viewing cone. Entities in the player's direct field of view receive 60Hz high-fidelity updates; entities in the periphery receive 30Hz quantized deltas; entities behind receive 0Hz or low-frequency audio proxy heartbeats.
+   • <b>Actor Dormancy (Tick Culling / Variable Rate Simulation - VRS):</b> Unreal Engine Iris and MMO engines (like Ryzom's NeL) put non-visible actors into a "dormant" state. The client stops evaluating skeletal animations, inverse kinematics, ragdolls, and hitboxes for players outside the viewing cone.
+   • <b>Complete Object Impermanence (Transient Virtual Proxying):</b> The server holds the canonical world state, but to the client's CPU and memory, off-screen combatants literally do not exist.
+
+<div style="background:#0f172a; padding:12px; border-radius:6px; margin:12px 0; border:1px solid #be185d;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-weight:bold;">
+        <span style="color:#f472b6;">Camera Field-of-Vision (FoV) Cone:</span>
+        <span style="color:#fb7185;">${arenaState.playerFovDeg}° (${arenaState.playerFovDeg <= 60 ? 'Narrow Tactical Zoom' : (arenaState.playerFovDeg <= 90 ? 'Standard Combat FoV' : 'Ultra-Wide Panoramic')})</span>
+    </div>
+    <input type="range" min="30" max="120" step="5" value="${arenaState.playerFovDeg}" oninput="setArenaFov(this.value)" style="width:100%; height:6px; accent-color:#be185d; cursor:pointer;">
+    <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#94a3b8; margin-top:2px;">
+        <span>30° (Sniper Scope / High Cull)</span>
+        <span>80° (Standard Combat)</span>
+        <span>120° (Wide Fisheye)</span>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; margin-top:12px; margin-bottom:6px; font-weight:bold;">
+        <span style="color:#f472b6;">Camera Combat Heading / Yaw:</span>
+        <span style="color:#fb7185;">${arenaState.playerHeadingDeg}° (Compass Orientation)</span>
+    </div>
+    <input type="range" min="0" max="360" step="5" value="${arenaState.playerHeadingDeg}" oninput="setArenaHeading(this.value)" style="width:100%; height:6px; accent-color:#be185d; cursor:pointer;">
+</div>
+
+<span style="color:#f59e0b;">## 2. Massive PvP Arena Simulation Telemetry (400 Combatants)</span>
+• <b>Total Combatants in Arena:</b> 400 Active Fighters (Fyros Legion vs Matis Vanguard)
+• <b>Focal Field of View (100% 60Hz):</b> <span style="color:#38bdf8; font-weight:bold;">${rel.focal} Combatants</span> (Full mesh, skeletal bones, trajectories)
+• <b>Peripheral Vision (50% 30Hz):</b> <span style="color:#facc15; font-weight:bold;">${rel.peripheral} Combatants</span> (LOD1 baked anim, quantized 16-bit deltas)
+• <b>Flank Audio Proxies (15% 10Hz):</b> <span style="color:#fb923c; font-weight:bold;">${rel.flank} Combatants</span> (Mesh culled, footstep audio ping only)
+• <b>Complete Actor Dormancy (0% 0Hz):</b> <span style="color:#ef4444; font-weight:bold;">${rel.dormant} Combatants (Culled / Dormant)</span>
+
+<span style="color:#f59e0b;">## 3. Distributed Bandwidth & CPU Load Optimization</span>
+• <b>Unoptimized Broadcast:</b> ${rel.unoptKbps} Kbps (400 clients × 60Hz × 180B = ~34.56 Mbps/player)
+• <b>Foveated Relevancy Bandwidth:</b> <span style="color:#10b981; font-weight:bold;">${rel.optKbps} Kbps</span>
+• <b>Total Network Bandwidth Reduction:</b> <span style="color:#10b981; font-weight:bold;">-${rel.bwSavingsPct}%</span>
+• <b>Client CPU Bone Simulation Savings:</b> <span style="color:#38bdf8; font-weight:bold;">-${rel.cpuSavingsPct}%</span> (90%+ skeletal bone updates skipped)
+`;
+                return;
+            }
 
             if (currentEntity === 'village') {
                 const vEval = evaluateVillageAffordances();
