@@ -243,6 +243,20 @@
                 <div class="vital-label"><span>Stamina (Harvest)</span><span id="stam-val">800 / 800</span></div>
                 <div class="progress-bar"><div class="progress-fill stam-fill" id="stam-bar"></div></div>
             </div>
+            <div style="border-top: 1px solid #334155; margin: 8px 0 6px 0;"></div>
+            <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 2px;">Dynamic Morphological State:</div>
+            <div style="display:flex; justify-content:space-between; font-size:0.73rem; margin-bottom:2px;">
+                <span>Sword Arm Scale:</span>
+                <span id="arm-scale-val" style="color:#fbbf24; font-weight:bold;">1.00x (+0%)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.73rem; margin-bottom:2px;">
+                <span>Ocular Element:</span>
+                <span id="ocular-elem-val" style="color:#94a3b8; font-weight:bold;">Dormant (Normal)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.73rem;">
+                <span>Spell Mastery:</span>
+                <span id="spell-tier-val" style="color:#38bdf8; font-weight:bold;">Tier 0 Novice</span>
+            </div>
         </div>
 
         <!-- Target Frame -->
@@ -344,8 +358,10 @@
             <button class="action-btn" style="background: #15803d;" onclick="harvestVillageTreeAndTriggerEcosystem()">🪓 Clear-Cut Village Grove (Trigger Migration)</button>
             <button class="action-btn" style="background: #0d9488;" onclick="allowEcosystemRecovery()">🌱 Allow Ecological Regrowth</button>
             <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector()">🤖 Inspect Agentic Brains</button>
-            <button class="action-btn" style="background: #b91c1c;" onclick="ambushCaravanAndInflictSlash()">💥 Ambush Caravan</button>
-            <button class="action-btn" onclick="castAction('Fireball', 25, 150)">Cast Fireball (25 Sap)</button>
+            <button class="action-btn" style="background: #e11d48;" onclick="swingHeavyBladeHypertrophy()">⚔️ Swing Greatsword (+Arm Hypertrophy)</button>
+            <button class="action-btn" style="background: #ea580c;" onclick="castElementalSpell('Fire')">🔥 Cast Fire (Amber Flame Eyes)</button>
+            <button class="action-btn" style="background: #0284c7;" onclick="castElementalSpell('Cold')">❄️ Cast Cold (Cyan Frost Eyes)</button>
+            <button class="action-btn" style="background: #7c3aed;" onclick="castElementalSpell('Shock')">⚡ Cast Shock (Purple Ion Eyes)</button>
             <a href="comparison.html" class="action-btn" style="background: #d29922; color: #161b22;">Acetone Wash 3D ⇄</a>
             <a href="tda_comparison.html" class="action-btn" style="background: #e3b341; color: #0d1117;">TDA 5-Trit ⇄</a>
             <a href="cinematic_comparison.html" class="action-btn" style="background: #a371f7; color: #0d1117;">Cinematic GI ⇄</a>
@@ -358,6 +374,58 @@
         let harvestCount = 0;
         let activeTab = 'persona';
         let currentEntity = 'dax'; // 'dax' | 'village' | 'frontier'
+
+        // Dynamic Morphological Adaptation (Hypertrophy & Ocular Elemental Shift)
+        const morphology = {
+            swings: 0,
+            armScale: 1.0,
+            fireCasts: 0,
+            coldCasts: 0,
+            shockCasts: 0,
+            totalCasts: 0,
+            ocularIntensity: 0.0,
+            ocularColor: [0.92, 0.75, 0.60],
+            activeElement: "Dormant (Normal)",
+            spellTier: 0
+        };
+
+        function updateMorphologyUI() {
+            const growthPct = ((morphology.armScale - 1.0) * 100).toFixed(0);
+            document.getElementById('arm-scale-val').innerText = `${morphology.armScale.toFixed(2)}x (+${growthPct}%)`;
+            document.getElementById('ocular-elem-val').innerText = morphology.ocularIntensity > 0.05 ? morphology.activeElement : "Dormant (Normal)";
+            
+            const tierNames = ["Tier 0 Novice", "Tier 1 Neophyte", "Tier 2 Adept", "Tier 3 Master (-15% Cast)"];
+            document.getElementById('spell-tier-val').innerText = tierNames[morphology.spellTier] || "Tier 3 Master";
+        }
+
+        function swingHeavyBladeHypertrophy() {
+            morphology.swings += 3;
+            const progress = 1.0 - Math.exp(-0.025 * morphology.swings);
+            morphology.armScale = 1.0 + (0.35 * progress);
+            updateMorphologyUI();
+            spawnFloatingText(`⚔️ SWUNG BLADE! Arm Hypertrophy: +${(progress * 35).toFixed(0)}% Volume`, '#fbbf24', window.innerWidth * 0.45, window.innerHeight * 0.45);
+        }
+
+        function castElementalSpell(element) {
+            morphology.totalCasts++;
+            if (element === 'Fire') {
+                morphology.fireCasts++;
+                morphology.ocularColor = [1.0, 0.42, 0.05];
+                morphology.activeElement = "Incandescent Flame (Amber)";
+            } else if (element === 'Cold') {
+                morphology.coldCasts++;
+                morphology.ocularColor = [0.15, 0.85, 1.0];
+                morphology.activeElement = "Cryogenic Frost (Cyan)";
+            } else if (element === 'Shock') {
+                morphology.shockCasts++;
+                morphology.ocularColor = [0.85, 0.25, 1.0];
+                morphology.activeElement = "Electric Discharge (Violet)";
+            }
+            morphology.ocularIntensity = Math.min(1.0, morphology.ocularIntensity + 0.40);
+            morphology.spellTier = morphology.totalCasts >= 15 ? 3 : (morphology.totalCasts >= 6 ? 2 : (morphology.totalCasts >= 2 ? 1 : 0));
+            updateMorphologyUI();
+            spawnFloatingText(`✨ Cast ${element}! Eyes ignite with ${element} glow!`, '#38bdf8', window.innerWidth * 0.45, window.innerHeight * 0.4);
+        }
 
         // Somatic Biological Recovery Model (Swanson Allometric Healing Curve)
         let daxHasInjury = false;
@@ -1168,22 +1236,38 @@ ${daxEpisodicMemory.join('\n\n')}
             attribute vec3 aPosition;
             attribute vec3 aNormal;
             attribute vec3 aColor;
-            attribute float aIsScar;
+            attribute float aTag; // 0=normal, 1=scar, 2=eye, 3=arm
             uniform mat4 uMatrix;
             uniform vec3 uScarTint;
+            uniform vec3 uOcularTint;
+            uniform float uOcularGlow;
+            uniform float uArmScale;
             varying vec3 vNormal;
             varying vec3 vPos;
             varying vec3 vColor;
+            varying float vTag;
 
             void main() {
                 vNormal = aNormal;
-                vPos = aPosition;
+                vTag = aTag;
+                vec3 pos = aPosition;
                 vec3 col = aColor;
-                if (aIsScar > 0.5) {
+
+                if (aTag > 2.5) {
+                    // Arm & Weapon Hypertrophy scaling around arm root (X: 0.28, Z: 0.08)
+                    pos.x = (pos.x - 0.28) * uArmScale + 0.28;
+                    pos.z = (pos.z - 0.08) * uArmScale + 0.08;
+                } else if (aTag > 1.5) {
+                    // Ocular Elemental Shift
+                    col = mix(aColor, uOcularTint, clamp(uOcularGlow, 0.0, 1.0));
+                } else if (aTag > 0.5) {
+                    // Somatic Battle Scar
                     col = uScarTint;
                 }
+
+                vPos = pos;
                 vColor = col;
-                gl_Position = uMatrix * vec4(aPosition, 1.0);
+                gl_Position = uMatrix * vec4(pos, 1.0);
             }
         `;
 
@@ -1192,8 +1276,11 @@ ${daxEpisodicMemory.join('\n\n')}
             varying vec3 vNormal;
             varying vec3 vPos;
             varying vec3 vColor;
+            varying float vTag;
             uniform vec3 uLightDir;
             uniform float uAmberPulse;
+            uniform vec3 uOcularTint;
+            uniform float uOcularGlow;
 
             void main() {
                 vec3 n = normalize(vNormal);
@@ -1205,7 +1292,10 @@ ${daxEpisodicMemory.join('\n\n')}
 
                 vec3 color = vColor * diff + spec;
 
-                if (vColor.g > 0.5 && vColor.r > 0.8 && vColor.b < 0.3) {
+                if (vTag > 1.5 && vTag < 2.5) {
+                    // Self-illuminated blazing elemental eyes/visor
+                    color = uOcularTint * (1.2 + uOcularGlow * 1.8);
+                } else if (vColor.g > 0.5 && vColor.r > 0.8 && vColor.b < 0.3) {
                     color += vec3(1.0, 0.7, 0.1) * uAmberPulse;
                 }
 
@@ -1230,15 +1320,15 @@ ${daxEpisodicMemory.join('\n\n')}
         const vertices = [];
         const normals = [];
         const colors = [];
-        const scarTags = [];
+        const customTags = [];
         const indices = [];
 
-        function addQuad(p0, p1, p2, p3, n, c, isScar = 0.0) {
+        function addQuad(p0, p1, p2, p3, n, c, tag = 0.0) {
             const baseIdx = vertices.length / 3;
             vertices.push(...p0, ...p1, ...p2, ...p3);
             normals.push(...n, ...n, ...n, ...n);
             colors.push(...c, ...c, ...c, ...c);
-            scarTags.push(isScar, isScar, isScar, isScar);
+            customTags.push(tag, tag, tag, tag);
             indices.push(baseIdx, baseIdx + 1, baseIdx + 2, baseIdx, baseIdx + 2, baseIdx + 3);
         }
 
@@ -1329,22 +1419,26 @@ ${daxEpisodicMemory.join('\n\n')}
 
         // 4. Stylized Fyros Outpost Warrior Avatar
         function addWarriorAvatar(ax, ay, az) {
-            addQuad([ax-0.2, ay+0.4, az+0.15], [ax+0.2, ay+0.4, az+0.15], [ax+0.2, ay+1.1, az+0.15], [ax-0.2, ay+1.1, az+0.15], [0,0,1], [0.85, 0.28, 0.15]);
-            addQuad([ax-0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.4, az+0.1], [ax-0.12, ay+1.4, az+0.1], [0,0,1], [0.92, 0.75, 0.60]);
-            addQuad([ax+0.25, ay+0.1, az], [ax+0.29, ay+0.1, az], [ax+0.29, ay+1.6, az], [ax+0.25, ay+1.6, az], [1,0,0], [0.6, 0.45, 0.25]);
-            addQuad([ax+0.29, ay+1.35, az], [ax+0.55, ay+1.45, az], [ax+0.55, ay+1.6, az], [ax+0.29, ay+1.6, az], [0,1,0], [0.2, 0.8, 0.9]);
+            // Torso
+            addQuad([ax-0.2, ay+0.4, az+0.15], [ax+0.2, ay+0.4, az+0.15], [ax+0.2, ay+1.1, az+0.15], [ax-0.2, ay+1.1, az+0.15], [0,0,1], [0.85, 0.28, 0.15], 0.0);
+            // Head
+            addQuad([ax-0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.4, az+0.1], [ax-0.12, ay+1.4, az+0.1], [0,0,1], [0.92, 0.75, 0.60], 0.0);
+            // Dynamic Elemental Eyes / Visor (tag = 2.0)
+            addQuad([ax-0.08, ay+1.26, az+0.12], [ax+0.08, ay+1.26, az+0.12], [ax+0.08, ay+1.32, az+0.12], [ax-0.08, ay+1.32, az+0.12], [0,0,1], [0.92, 0.75, 0.60], 2.0);
+            // Dominant Arm & Heavy Greatsword (tag = 3.0 -> Dynamic Hypertrophy)
+            addQuad([ax+0.25, ay+0.1, az], [ax+0.31, ay+0.1, az], [ax+0.31, ay+1.6, az], [ax+0.25, ay+1.6, az], [1,0,0], [0.6, 0.45, 0.25], 3.0);
+            addQuad([ax+0.31, ay+1.35, az], [ax+0.60, ay+1.45, az], [ax+0.60, ay+1.62, az], [ax+0.31, ay+1.62, az], [0,1,0], [0.2, 0.8, 0.9], 3.0);
         }
         addWarriorAvatar(0, 0, 2.2);
 
         // 5. Stylized Foreman Dax (Karavan Overseer with dynamic battle scar)
-        // 5. Stylized Foreman Dax (Karavan Overseer with dynamic battle scar)
         function addForemanDaxAvatar(dx, dy, dz) {
-            addQuad([dx-0.22, dy+0.35, dz+0.15], [dx+0.22, dy+0.35, dz+0.15], [dx+0.22, dy+1.15, dz+0.15], [dx-0.22, dy+1.15, dz+0.15], [0,0,1], [0.92, 0.70, 0.15]);
-            addQuad([dx-0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.42, dz+0.1], [dx-0.12, dy+1.42, dz+0.1], [0,0,1], [0.88, 0.72, 0.58]);
-            addQuad([dx-0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.36, dz+0.12], [dx-0.13, dy+1.36, dz+0.12], [0,0,1], [0.2, 0.8, 1.0]);
-            addQuad([dx-0.35, dy+0.6, dz+0.2], [dx-0.15, dy+0.6, dz+0.2], [dx-0.15, dy+0.9, dz+0.2], [dx-0.35, dy+0.9, dz+0.2], [0,0,1], [0.95, 0.95, 0.90]);
+            addQuad([dx-0.22, dy+0.35, dz+0.15], [dx+0.22, dy+0.35, dz+0.15], [dx+0.22, dy+1.15, dz+0.15], [dx-0.22, dy+1.15, dz+0.15], [0,0,1], [0.92, 0.70, 0.15], 0.0);
+            addQuad([dx-0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.42, dz+0.1], [dx-0.12, dy+1.42, dz+0.1], [0,0,1], [0.88, 0.72, 0.58], 0.0);
+            addQuad([dx-0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.36, dz+0.12], [dx-0.13, dy+1.36, dz+0.12], [0,0,1], [0.2, 0.8, 1.0], 0.0);
+            addQuad([dx-0.35, dy+0.6, dz+0.2], [dx-0.15, dy+0.6, dz+0.2], [dx-0.15, dy+0.9, dz+0.2], [dx-0.35, dy+0.9, dz+0.2], [0,0,1], [0.95, 0.95, 0.90], 0.0);
 
-            // Somatic Chest Slash Scar Polygon (tagged with isScar = 1.0)
+            // Somatic Chest Slash Scar Polygon (tagged with tag = 1.0)
             addQuad([dx-0.16, dy+0.68, dz+0.17], [dx+0.12, dy+0.92, dz+0.17], [dx+0.10, dy+0.97, dz+0.17], [dx-0.18, dy+0.73, dz+0.17], [0,0,1], [0.92, 0.70, 0.15], 1.0);
         }
         addForemanDaxAvatar(2.0, 0, 1.6);
@@ -1420,12 +1514,12 @@ ${daxEpisodicMemory.join('\n\n')}
         gl.enableVertexAttribArray(aCol);
         gl.vertexAttribPointer(aCol, 3, gl.FLOAT, false, 0, 0);
 
-        const scarBuf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, scarBuf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(scarTags), gl.STATIC_DRAW);
-        const aIsScar = gl.getAttribLocation(program, 'aIsScar');
-        gl.enableVertexAttribArray(aIsScar);
-        gl.vertexAttribPointer(aIsScar, 1, gl.FLOAT, false, 0, 0);
+        const tagBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, tagBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(customTags), gl.STATIC_DRAW);
+        const aTag = gl.getAttribLocation(program, 'aTag');
+        gl.enableVertexAttribArray(aTag);
+        gl.vertexAttribPointer(aTag, 1, gl.FLOAT, false, 0, 0);
 
         const idxBuf = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
@@ -1435,6 +1529,9 @@ ${daxEpisodicMemory.join('\n\n')}
         const uLightDir = gl.getUniformLocation(program, 'uLightDir');
         const uAmberPulse = gl.getUniformLocation(program, 'uAmberPulse');
         const uScarTint = gl.getUniformLocation(program, 'uScarTint');
+        const uOcularTint = gl.getUniformLocation(program, 'uOcularTint');
+        const uOcularGlow = gl.getUniformLocation(program, 'uOcularGlow');
+        const uArmScale = gl.getUniformLocation(program, 'uArmScale');
 
         gl.enable(gl.DEPTH_TEST);
 
@@ -1485,6 +1582,12 @@ ${daxEpisodicMemory.join('\n\n')}
             gl.uniform3f(uLightDir, 0.5, 0.8, 0.6);
             gl.uniform1f(uAmberPulse, (Math.sin(time * 3.0) + 1.0) * 0.5);
             gl.uniform3f(uScarTint, currentScarColor[0], currentScarColor[1], currentScarColor[2]);
+            gl.uniform3f(uOcularTint, morphology.ocularColor[0], morphology.ocularColor[1], morphology.ocularColor[2]);
+            gl.uniform1f(uOcularGlow, morphology.ocularIntensity);
+            gl.uniform1f(uArmScale, morphology.armScale);
+
+            // Natural resting decay of magic charge
+            morphology.ocularIntensity = Math.max(0.0, morphology.ocularIntensity - 0.001);
 
             // 1. Draw Static World Geometry
             gl.uniformMatrix4fv(uMatrix, false, mvp);
