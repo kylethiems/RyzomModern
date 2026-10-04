@@ -339,6 +339,7 @@
                 <button id="tab-btn-somatic" class="tab-btn" onclick="switchTab('somatic')">SOMATIC.md (Scars)</button>
                 <button id="tab-btn-lifecycle" class="tab-btn" onclick="switchTab('lifecycle')">TIME_DILATION.md</button>
                 <button id="tab-btn-relevancy" class="tab-btn" onclick="switchTab('relevancy')">RELEVANCY_FOVEATED.md</button>
+                <button id="tab-btn-visualbudget" class="tab-btn" onclick="switchTab('visualbudget')">VISUAL_BUDGET.md (GPU ms)</button>
                 <button id="tab-btn-affordances" class="tab-btn" onclick="switchTab('affordances')">AFFORDANCES.md</button>
                 <button id="tab-btn-neural" class="tab-btn" onclick="switchTab('neural')">NEURAL_MAP.json</button>
                 <button id="tab-btn-memory" class="tab-btn" onclick="switchTab('memory')">MEMORY.md</button>
@@ -359,6 +360,7 @@
         <!-- Controls -->
         <div class="controls">
             <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
+            <button class="action-btn" style="background: #059669;" onclick="openNpcInspector(); switchTab('visualbudget');">✨ Foveated Visual Budget (GPU ms)</button>
             <button class="action-btn" style="background: #be185d;" onclick="openNpcInspector(); switchEntity('arena'); switchTab('relevancy');">🎯 FoV Relevancy Culling (PvP)</button>
             <button class="action-btn" style="background: #4338ca;" onclick="openNpcInspector(); switchTab('lifecycle')">⏩ Time-Dilation Training (Age NPCs)</button>
             <button class="action-btn" style="background: #15803d;" onclick="harvestVillageTreeAndTriggerEcosystem()">🪓 Clear-Cut Village Grove</button>
@@ -584,6 +586,98 @@
 
         function setArenaHeading(val) {
             arenaState.playerHeadingDeg = parseFloat(val);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        // Foveated Visual Budget & GPU Headroom Reallocation State
+        const visualBudgetState = {
+            cadence: '60fps', // '60fps' (16.67ms) | '120fps' (8.33ms)
+            visibleRatio: 0.30,
+            focalRatio: 0.40,
+            enableGpuHiZ: true
+        };
+
+        function calculateVisualBudget(cadenceStr, visRatio, focalRatio, enableGpuHiZ) {
+            const is60 = cadenceStr === '60fps';
+            const targetBudgetMs = is60 ? 16.667 : 8.333;
+
+            // Baseline Unoptimized
+            const baseCullMs = 0.10;
+            const baseGeomMs = is60 ? 5.40 : 2.70;
+            const baseLightMs = is60 ? 6.60 : 3.30;
+            const basePostMs = is60 ? 4.10 : 2.05;
+            const baseTotalMs = baseCullMs + baseGeomMs + baseLightMs + basePostMs;
+
+            // Foveated Optimized
+            const optCullMs = enableGpuHiZ ? 0.35 : 0.85;
+            const optGeomMs = baseGeomMs * (visRatio + 0.05);
+            const foveatedShadingWeight = (visRatio * focalRatio * 1.0) + (visRatio * (1.0 - focalRatio) * 0.40);
+            const optLightMs = baseLightMs * Math.max(0.25, foveatedShadingWeight + 0.15);
+            const optPostMs = basePostMs * 0.85;
+            const optTotalBeforeUpgrades = optCullMs + optGeomMs + optLightMs + optPostMs;
+
+            const recoveredHeadroomMs = Math.max(0.0, baseTotalMs - optTotalBeforeUpgrades);
+
+            // Reinvestment into Focal Cinematic Upgrades
+            const reinvestmentCap = Math.max(0.0, Math.min(recoveredHeadroomMs * 0.75, targetBudgetMs - optTotalBeforeUpgrades - 2.0));
+            const tessellationMs = reinvestmentCap * 0.32;
+            const subsurfaceMs = reinvestmentCap * 0.30;
+            const ssgiMs = reinvestmentCap * 0.22;
+            const softShadowsMs = reinvestmentCap * 0.16;
+            const totalUpgradesMs = tessellationMs + subsurfaceMs + ssgiMs + softShadowsMs;
+
+            const finalFrameTime = optTotalBeforeUpgrades + totalUpgradesMs;
+            const safetyHeadroom = targetBudgetMs - finalFrameTime;
+            const effectiveFps = finalFrameTime > 0 ? (1000.0 / finalFrameTime) : 0;
+
+            return {
+                targetBudgetMs,
+                baseTotalMs,
+                baseGeomMs,
+                baseLightMs,
+                basePostMs,
+                optCullMs,
+                optGeomMs,
+                optLightMs,
+                optPostMs,
+                optTotalBeforeUpgrades,
+                recoveredHeadroomMs,
+                tessellationMs,
+                subsurfaceMs,
+                ssgiMs,
+                softShadowsMs,
+                totalUpgradesMs,
+                finalFrameTime,
+                safetyHeadroom,
+                effectiveFps
+            };
+        }
+
+        function setVisualBudgetCadence(cad) {
+            visualBudgetState.cadence = cad;
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function setVisualBudgetVisibility(val) {
+            visualBudgetState.visibleRatio = parseFloat(val);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function setVisualBudgetFocal(val) {
+            visualBudgetState.focalRatio = parseFloat(val);
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function toggleGpuHiZ(val) {
+            visualBudgetState.enableGpuHiZ = val;
             if (document.getElementById('npc-inspector').classList.contains('open')) {
                 renderInspectorContent();
             }
@@ -1072,6 +1166,85 @@ In distributed 3D game engines, deliberately removing entities from processing w
 • <b>Foveated Relevancy Bandwidth:</b> <span style="color:#10b981; font-weight:bold;">${rel.optKbps} Kbps</span>
 • <b>Total Network Bandwidth Reduction:</b> <span style="color:#10b981; font-weight:bold;">-${rel.bwSavingsPct}%</span>
 • <b>Client CPU Bone Simulation Savings:</b> <span style="color:#38bdf8; font-weight:bold;">-${rel.cpuSavingsPct}%</span> (90%+ skeletal bone updates skipped)
+`;
+                return;
+            }
+
+            if (activeTab === 'visualbudget') {
+                const b = calculateVisualBudget(
+                    visualBudgetState.cadence,
+                    visualBudgetState.visibleRatio,
+                    visualBudgetState.focalRatio,
+                    visualBudgetState.enableGpuHiZ
+                );
+                body.innerHTML = `
+<span style="color:#38bdf8;"># VISUAL_BUDGET.md: GPU Frame Time Reallocation & Micro-Cluster Culling</span>
+
+<span style="color:#f59e0b;">## 1. Frame Time Reallocation Theory: 16.6ms / 8.3ms Hardware Budget</span>
+Every frame operates on a strict hardware deadline: <b>16.67ms (60 FPS)</b> or <b>8.33ms (120 FPS)</b>.
+When 70% of non-visible world geometry is discarded through frustum and occlusion culling, the saved compute time is <b>reinvested directly into the visible 30%</b>:
+
+1. <b>Higher-Density Geometry (Cluster Culling / Nanite):</b>
+   • Meshes are partitioned into ~128 triangle clusters.
+   • Back-facing, sub-pixel, and occluded clusters are discarded via GPU Compute before rasterization.
+   • Allows millions of raw film-grade polygons (organic root bark wrinkles, leaf venation) without dropping below 60 FPS.
+
+2. <b>Ray Tracing & Complex Shaders (Pixel Frustum Restraint):</b>
+   • Per-pixel volumetric fog, subsurface scattering (skin light bleed), and screen-space global illumination (SSGI) are computationally intense.
+   • View-trimming ensures expensive ray marches only compute on exact screen-visible pixels.
+
+3. <b>Foveated Rendering & Variable Rate Shading (VRS):</b>
+   • Central focal cone renders at 100% full-rate shading; peripheral vision renders at 2x2 coarse pixels (50% compute).
+   • Recovers <b>30% to 50% GPU compute</b>, funding real-time cinematic lighting.
+
+4. <b>Overcoming the Culling Bottleneck:</b>
+   • CPU software culling on thousands of dynamic objects stalls the render thread.
+   • We utilize <b>Two-Pass GPU Compute Hierarchical Z-Buffering (Hi-Z)</b>: costs only <b>0.35ms</b>, eliminating CPU bottlenecks!
+
+<div style="background:#0f172a; padding:12px; border-radius:6px; margin:12px 0; border:1px solid #059669;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+        <span style="color:#34d399; font-weight:bold;">Target Display Cadence:</span>
+        <div>
+            <button onclick="setVisualBudgetCadence('60fps')" style="background:${visualBudgetState.cadence === '60fps' ? '#059669' : '#1e293b'}; color:#fff; border:none; padding:4px 10px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:bold;">60 FPS (16.67ms)</button>
+            <button onclick="setVisualBudgetCadence('120fps')" style="background:${visualBudgetState.cadence === '120fps' ? '#059669' : '#1e293b'}; color:#fff; border:none; padding:4px 10px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:bold;">120 FPS (8.33ms)</button>
+        </div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:bold;">
+        <span style="color:#94a3b8;">Visible Scene Ratio:</span>
+        <span style="color:#34d399;">${(visualBudgetState.visibleRatio * 100).toFixed(0)}% (70% Culled by Frustum/Occlusion)</span>
+    </div>
+    <input type="range" min="0.10" max="0.90" step="0.05" value="${visualBudgetState.visibleRatio}" oninput="setVisualBudgetVisibility(this.value)" style="width:100%; height:6px; accent-color:#059669; cursor:pointer;">
+
+    <div style="display:flex; justify-content:space-between; margin-top:10px; margin-bottom:4px; font-weight:bold;">
+        <span style="color:#94a3b8;">Focal Density Ratio of Visible Area:</span>
+        <span style="color:#34d399;">${(visualBudgetState.focalRatio * 100).toFixed(0)}% (Central Focus Cone)</span>
+    </div>
+    <input type="range" min="0.10" max="0.80" step="0.05" value="${visualBudgetState.focalRatio}" oninput="setVisualBudgetFocal(this.value)" style="width:100%; height:6px; accent-color:#059669; cursor:pointer;">
+
+    <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="hiz-check" ${visualBudgetState.enableGpuHiZ ? 'checked' : ''} onchange="toggleGpuHiZ(this.checked)" style="cursor:pointer;">
+        <label for="hiz-check" style="font-size:0.8rem; color:#e2e8f0; cursor:pointer;">Enable Two-Pass GPU Compute Hi-Z Culling (0.35ms compute vs 0.85ms CPU stall)</label>
+    </div>
+</div>
+
+<span style="color:#f59e0b;">## 2. Comparative Frame Time Telemetry</span>
+• <b>Target Frame Budget:</b> ${b.targetBudgetMs.toFixed(2)} ms
+• <b>Baseline Unoptimized (Full Omnidirectional Scene):</b> <span style="color:#f87171; font-weight:bold;">${b.baseTotalMs.toFixed(2)} ms</span> (Straining hardware budget)
+• <b>Foveated Base (After 70% View Trimming):</b> <span style="color:#34d399; font-weight:bold;">${b.optTotalBeforeUpgrades.toFixed(2)} ms</span>
+• <b>Recovered GPU Compute Headroom:</b> <span style="color:#10b981; font-weight:bold;">+${b.recoveredHeadroomMs.toFixed(2)} ms Surplus</span>
+
+<span style="color:#f59e0b;">## 3. Reallocation into Focal Cinematic Upgrades</span>
+• <b>Focal Micro-Cluster Tessellation (Nanite Bark Crevices):</b> <span style="color:#a78bfa;">+${b.tessellationMs.toFixed(2)} ms</span>
+• <b>Volumetric Subsurface Scattering (Translucent Foliage/Skin):</b> <span style="color:#f472b6;">+${b.subsurfaceMs.toFixed(2)} ms</span>
+• <b>Screen-Space Global Illumination (SSGI Ambient Radiance):</b> <span style="color:#38bdf8;">+${b.ssgiMs.toFixed(2)} ms</span>
+• <b>Soft Penumbra Contact Shadows (PCSS Soft Shadows):</b> <span style="color:#fbbf24;">+${b.softShadowsMs.toFixed(2)} ms</span>
+• <b>Total Reinvested Compute:</b> <span style="color:#34d399; font-weight:bold;">+${b.totalUpgradesMs.toFixed(2)} ms</span>
+
+<span style="color:#f59e0b;">## 4. Final Balanced Hardware Performance</span>
+• <b>Final Frame Time with Film-Grade Visuals:</b> <span style="color:#10b981; font-weight:bold;">${b.finalFrameTime.toFixed(2)} ms</span> (Under ${b.targetBudgetMs.toFixed(2)}ms cap!)
+• <b>Safety Headroom Margin:</b> <span style="color:#34d399; font-weight:bold;">+${b.safetyHeadroom.toFixed(2)} ms</span>
+• <b>Effective Frame Rate:</b> <span style="color:#38bdf8; font-weight:bold;">${b.effectiveFps.toFixed(1)} FPS (Rock-Solid Smooth Cadence)</span>
 `;
                 return;
             }
