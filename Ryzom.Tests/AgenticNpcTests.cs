@@ -95,5 +95,46 @@ namespace Ryzom.Tests
             Assert.True(npc.EpisodicMemoryLog.Count > initialCount);
             Assert.Contains("MektoubArrival", npc.EpisodicMemoryLog[^1]);
         }
+
+        [Fact]
+        public void Test_SomaticInjury_InflictAndAllometricRecovery()
+        {
+            var profile = new SomaticProfile();
+            var t0 = new DateTime(2026, 10, 4, 12, 0, 0, DateTimeKind.Utc);
+
+            profile.InflictInjury(InjuryType.KitinMandibleSlash, InjuryLocation.ChestPlate, 3.0, t0);
+
+            // T0: Fresh open wound
+            var state0 = profile.GetAggregateVisualState(t0);
+            Assert.True(state0.BleedSeverity > 0.8);
+            Assert.True(state0.NeedsBandage);
+            Assert.Contains("Fresh open", state0.VisualDescription);
+
+            // T0 + 24h: Scab and granulating tissue
+            var state24 = profile.GetAggregateVisualState(t0.AddHours(24));
+            Assert.True(state24.BleedSeverity < state0.BleedSeverity);
+            Assert.True(state24.PermanentScarFactor > 0.1);
+
+            // T0 + 120h: Healed permanent silvery battle scar
+            var state120 = profile.GetAggregateVisualState(t0.AddHours(120));
+            Assert.Equal(0.0, state120.BleedSeverity);
+            Assert.False(state120.NeedsBandage);
+            Assert.True(state120.PermanentScarFactor >= 0.4);
+            Assert.Contains("Healed silvery battle scar", state120.VisualDescription);
+        }
+
+        [Fact]
+        public void Test_CombatAmbush_ModifiesDialogueAndEpisodicMemory()
+        {
+            string npcDir = GetForemanDaxPath();
+            var npc = new AgenticNpcInstance(npcDir);
+            var now = DateTime.UtcNow;
+
+            npc.RecordCombatInjury(InjuryType.KitinMandibleSlash, InjuryLocation.ChestPlate, 2.5, now);
+
+            Assert.True(npc.Somatic.ActiveInjuries.Count > 0);
+            Assert.Contains("COMBAT WOUND", npc.EpisodicMemoryLog[^2]); // Memory entry before the world event
+            Assert.Contains("mandible", npc.ActiveAffordance.FormattedDialogue, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

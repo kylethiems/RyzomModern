@@ -39,6 +39,7 @@ namespace Ryzom.Engine.AI
 
         public NpcSensoryInput CurrentSensoryState { get; private set; } = new(0, 0, 0, 0, 1.0);
         public EvaluatedAffordance ActiveAffordance { get; private set; } = new(string.Empty, 0, string.Empty, string.Empty);
+        public SomaticProfile Somatic { get; } = new();
 
         public AgenticNpcInstance(string directoryPath)
         {
@@ -127,13 +128,48 @@ namespace Ryzom.Engine.AI
             return ranked;
         }
 
+        public List<EvaluatedAffordance> RecordCombatInjury(
+            InjuryType type,
+            InjuryLocation location,
+            double severity,
+            DateTime timestampUtc)
+        {
+            Somatic.InflictInjury(type, location, severity, timestampUtc);
+
+            string timestamp = timestampUtc.ToString("HH:mm:ss UTC");
+            string entry = $"- `[{timestamp}]` COMBAT WOUND: Sustained {type} on {location} (Severity {severity:F1}). Armor scarred.";
+            EpisodicMemoryLog.Add(entry);
+
+            // Somatic feedback loop into sensory state (increases vigilance & paranoia)
+            var deltas = new Dictionary<string, double>
+            {
+                ["kitin_tremor"] = 0.6,
+                ["deforestation_spike"] = 0.4
+            };
+            return IngestWorldEvent("CombatAmbush", deltas, new());
+        }
+
         private string GenerateDialogue(string affordanceName, Dictionary<string, string> tokens)
         {
+            var somaticState = Somatic.GetAggregateVisualState(DateTime.UtcNow);
+
             string volume = tokens.GetValueOrDefault("volume", "245");
             string grade = tokens.GetValueOrDefault("grade", "Seasoned Heartwood");
             string profit = tokens.GetValueOrDefault("profit", "80,830");
             string haul = tokens.GetValueOrDefault("haul", "84.83");
             string km = tokens.GetValueOrDefault("km", "4.5");
+
+            // Somatic overlay for fresh wounds
+            if (somaticState.BleedSeverity > 0.4)
+            {
+                return $"*Clutches {somaticState.VisualDescription}* By the Kami, that mandible tore straight through my harness! Still... {volume} MBF of {grade} was worth the blood.";
+            }
+
+            // Somatic overlay for healed veteran scars
+            if (somaticState.PermanentScarFactor > 0.25 && affordanceName == "IdlePatrol")
+            {
+                return "*Traces silvery battle scar across armor plate* The Kitin raiders left their mark at the pass, but the caravan held the line.";
+            }
 
             return affordanceName switch
             {

@@ -58,7 +58,7 @@
         .sap-fill { background: #388bfd; width: 100%; }
         .stam-fill { background: #2ea043; width: 100%; }
 
-        /* Target HUD (Top Center) */
+        /* Target HUD */
         .target-hud {
             position: absolute;
             top: 16px;
@@ -79,7 +79,7 @@
         .target-name { font-size: 0.9rem; font-weight: 700; color: #10b981; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .target-details { font-size: 0.72rem; color: #94a3b8; font-family: monospace; margin-top: 2px; }
 
-        /* Swanson Residual Stumpage Panel (Right) */
+        /* Swanson Residual Stumpage Panel */
         .stumpage-card {
             position: absolute;
             top: 16px;
@@ -98,7 +98,7 @@
         .stumpage-title { font-size: 0.82rem; font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; pb: 4px; }
         .stumpage-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-family: monospace; }
 
-        /* Agentic NPC Foreman Dax In-World Speech Bubble */
+        /* Agentic NPC Foreman Dax Speech Bubble */
         .dax-speech-bubble {
             position: absolute;
             top: 16px;
@@ -109,7 +109,7 @@
             box-shadow: 0 0 20px rgba(2, 132, 199, 0.35);
             border-radius: 8px;
             padding: 12px 16px;
-            max-width: 310px;
+            max-width: 320px;
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.25s;
@@ -123,8 +123,8 @@
         .npc-inspector-modal {
             position: absolute;
             top: 0;
-            right: -450px;
-            width: 450px;
+            right: -470px;
+            width: 470px;
             height: 100%;
             background: rgba(11, 15, 25, 0.96);
             backdrop-filter: blur(16px);
@@ -138,12 +138,12 @@
         .npc-inspector-modal.open { right: 0; }
         .inspector-header { padding: 14px 18px; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; }
         .inspector-tabs { display: flex; background: #0f172a; border-bottom: 1px solid #1e293b; }
-        .tab-btn { flex: 1; padding: 9px 8px; font-size: 0.72rem; font-weight: 600; color: #94a3b8; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab-btn { flex: 1; padding: 9px 6px; font-size: 0.7rem; font-weight: 600; color: #94a3b8; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; background: rgba(56, 189, 248, 0.08); }
         .inspector-content { flex: 1; overflow-y: auto; padding: 14px 18px; font-family: monospace; font-size: 0.74rem; color: #cbd5e1; white-space: pre-wrap; line-height: 1.5; }
-        .inspector-footer { padding: 10px 18px; border-top: 1px solid #1e293b; display: flex; gap: 8px; background: #0f172a; }
+        .inspector-footer { padding: 10px 18px; border-top: 1px solid #1e293b; display: flex; gap: 8px; background: #0f172a; flex-wrap: wrap; }
 
-        /* Bottom Controls Bar */
+        /* Controls Bar */
         .controls {
             position: absolute;
             bottom: 20px;
@@ -187,7 +187,6 @@
             50% { box-shadow: 0 0 22px rgba(16, 185, 129, 0.8); }
         }
 
-        /* 3D In-World Harvest Float Text */
         .harvest-floater {
             position: absolute;
             pointer-events: none;
@@ -223,7 +222,7 @@
 <body>
     <header>
         <div class="logo">⚡ RYZOM MODERN — ATYS LIVING 3D ECOSYSTEM</div>
-        <div class="telemetry" id="telemetry">Netcode: Morton-64 Lattice Delta | 60.0 FPS | Agentic NPC Active</div>
+        <div class="telemetry" id="telemetry">Netcode: Morton-64 Lattice Delta | 60.0 FPS | Somatic Scars & Timescale Active</div>
     </header>
 
     <div id="canvas-container">
@@ -255,11 +254,11 @@
         <!-- Agentic NPC Foreman Dax Speech Bubble -->
         <div id="dax-speech" class="dax-speech-bubble" onclick="openNpcInspector()">
             <div class="dax-tag">
-                <span>🤖 Agentic NPC: Foreman Dax</span>
-                <span style="font-size: 0.65rem; color: #38bdf8;">[INSPECT BRAIN]</span>
+                <span id="dax-header-title">🤖 Agentic NPC: Foreman Dax</span>
+                <span style="font-size: 0.65rem; color: #38bdf8;">[INSPECT BRAIN & SCARS]</span>
             </div>
             <div id="dax-text">"Keep your blades sharp and your eyes on the sand dunes."</div>
-            <div class="dax-affordance-line">Active: <span id="dax-affordance" style="color: #38bdf8; font-weight: bold;">IdlePatrol</span> (Score: <span id="dax-score">0.10</span>) ⚙️ Click to Inspect</div>
+            <div class="dax-affordance-line">Active: <span id="dax-affordance" style="color: #38bdf8; font-weight: bold;">IdlePatrol</span> | Somatic: <span id="dax-somatic-status" style="color:#10b981;">Pristine</span> ⚙️</div>
         </div>
 
         <!-- Swanson Residual Stumpage Breakdown -->
@@ -282,35 +281,37 @@
         <div id="npc-inspector" class="npc-inspector-modal">
             <div class="inspector-header">
                 <div>
-                    <h3 style="color: #38bdf8; font-size: 0.95rem;">🤖 Agentic NPC Brain Inspector</h3>
-                    <div style="font-size: 0.72rem; color: #94a3b8;">Anthropic Markdown Setup + Topological Neural Map</div>
+                    <h3 style="color: #38bdf8; font-size: 0.95rem;">🤖 Agentic NPC Brain & Somatic Inspector</h3>
+                    <div style="font-size: 0.72rem; color: #94a3b8;">Allometric Healing Timescale & Physical Scar Decals</div>
                 </div>
                 <button onclick="closeNpcInspector()" style="background:none; border:none; color:#cbd5e1; font-size:1.2rem; cursor:pointer;">✕</button>
             </div>
             <div class="inspector-tabs">
                 <button id="tab-btn-persona" class="tab-btn active" onclick="switchTab('persona')">PERSONA.md</button>
+                <button id="tab-btn-somatic" class="tab-btn" onclick="switchTab('somatic')">SOMATIC.md (Scars)</button>
                 <button id="tab-btn-affordances" class="tab-btn" onclick="switchTab('affordances')">AFFORDANCES.md</button>
                 <button id="tab-btn-neural" class="tab-btn" onclick="switchTab('neural')">NEURAL_MAP.json</button>
-                <button id="tab-btn-memory" class="tab-btn" onclick="switchTab('memory')">MEMORY.md (Live)</button>
+                <button id="tab-btn-memory" class="tab-btn" onclick="switchTab('memory')">MEMORY.md</button>
             </div>
             <div class="inspector-content" id="inspector-body">
                 <!-- dynamic content rendered here -->
             </div>
             <div class="inspector-footer">
-                <button onclick="simulateTremorEvent()" style="background:#dc2626; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">⚠️ Inject Kitin Tremor</button>
-                <button onclick="simulateHarvestStimulus()" style="background:#059669; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">🪓 Ingest Timber Event</button>
+                <button onclick="ambushCaravanAndInflictSlash()" style="background:#b91c1c; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:700;">💥 Ambush Caravan (Inflict Scar)</button>
+                <button onclick="simulateTremorEvent()" style="background:#d97706; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">⚠️ Tremor Alarm</button>
+                <button onclick="simulateHarvestStimulus()" style="background:#059669; color:#fff; border:none; padding:7px 12px; border-radius:4px; font-size:0.75rem; cursor:pointer; font-weight:600;">🪓 Ingest Timber Event</button>
             </div>
         </div>
 
-        <div class="instruction-tag">🖱️ Click & Drag to Orbit 3D Camera | Click Tree to Harvest | Click Foreman Dax to Inspect Brain</div>
+        <div class="instruction-tag">🖱️ Click & Drag to Orbit | Click Tree to Harvest | Click Foreman Dax to Inspect Battle Scars & Timescale</div>
 
         <!-- Controls -->
         <div class="controls">
             <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
             <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector()">🤖 Inspect Agentic NPC (Foreman Dax)</button>
+            <button class="action-btn" style="background: #b91c1c;" onclick="ambushCaravanAndInflictSlash()">💥 Ambush Caravan (Inflict Mandible Slash)</button>
             <button class="action-btn" onclick="castAction('Fireball', 25, 150)">Cast Fireball (25 Sap)</button>
             <button class="action-btn" style="background: #1f6feb;" onclick="castAction('Aimed Shot', 40, 100)">Aimed Shot (40 Stamina)</button>
-            <button class="action-btn" style="background: #8957e5;" onclick="triggerLidarDecimation()">Trigger Voxel Decimation</button>
             <a href="comparison.html" class="action-btn" style="background: #d29922; color: #161b22;">Acetone Wash 3D ⇄</a>
             <a href="tda_comparison.html" class="action-btn" style="background: #e3b341; color: #0d1117;">TDA 5-Trit ⇄</a>
             <a href="cinematic_comparison.html" class="action-btn" style="background: #a371f7; color: #0d1117;">Cinematic GI ⇄</a>
@@ -322,6 +323,56 @@
         let currentHp = 1000, currentSap = 500, currentStam = 800;
         let harvestCount = 0;
         let activeTab = 'persona';
+
+        // Somatic Biological Recovery Model (Swanson Allometric Healing Curve)
+        let daxHasInjury = false;
+        let recoveryTimescaleHours = 0; // 0h to 120h
+        let currentScarColor = [0.92, 0.70, 0.15]; // Default robe color
+
+        function getDaxSomaticState(hours) {
+            if (!daxHasInjury) {
+                return {
+                    bleedSeverity: 0.0,
+                    scabOpacity: 0.0,
+                    permanentScarFactor: 0.0,
+                    limpFactor: 0.0,
+                    needsBandage: false,
+                    visualDescription: "Uninjured, pristine condition",
+                    healingProgress: 1.0,
+                    color: [0.92, 0.70, 0.15]
+                };
+            }
+
+            const lambda = 0.08 / 2.5; // severity 2.5
+            const progress = 1.0 - Math.exp(-lambda * hours);
+            const bleed = Math.max(0.0, 1.0 - progress * 2.5);
+            const scab = (progress > 0.2 && progress < 0.85) ? Math.sin(progress * Math.PI) : 0.0;
+            const scar = Math.min(0.45, progress * 0.45);
+            const limp = Math.max(0.0, (1.0 - progress) * 0.6);
+            const needsBandage = progress < 0.6;
+
+            let desc = "Fresh open Kitin Mandible Slash (Active Bleeding)";
+            let col = [0.95, 0.08, 0.08]; // Fresh bright blood red
+
+            if (progress >= 0.85) {
+                desc = "Healed permanent silvery battle scar (Veteran Mark)";
+                col = [0.82, 0.85, 0.92]; // Silvery weathered scar tissue
+            } else if (progress >= 0.4) {
+                desc = "Crusted healing scab over chest plate (Bandaged)";
+                col = [0.38, 0.12, 0.10]; // Dark crusted dried scab
+            }
+
+            return {
+                bleedSeverity: bleed,
+                scabOpacity: scab,
+                permanentScarFactor: scar,
+                limpFactor: limp,
+                needsBandage: needsBandage,
+                visualDescription: desc,
+                healingProgress: progress,
+                color: col
+            };
+        }
 
         // Foreman Dax Agentic Sensory State & Episodic Memory
         const daxSensory = {
@@ -366,6 +417,9 @@
 
             ranked.sort((a, b) => b.score - a.score);
 
+            const somatic = getDaxSomaticState(recoveryTimescaleHours);
+            currentScarColor = somatic.color;
+
             const volume = contextTokens.volume || "245";
             const grade = contextTokens.grade || "Seasoned Heartwood";
             const profit = contextTokens.profit || "80,830";
@@ -373,7 +427,13 @@
             const km = contextTokens.km || "4.5";
 
             let dialogue = "Keep your blades sharp and your eyes on the sand dunes.";
-            if (bestAffordance === "AppraiseFelledTimber") {
+
+            // Dynamic Somatic Dialogue Overlays based on wound healing stage
+            if (somatic.bleedSeverity > 0.4) {
+                dialogue = `*Clutches bleeding chest wound* By the Kami, that mandible tore right through my harness! Still... ${volume} MBF of ${grade} was worth the blood!`;
+            } else if (somatic.permanentScarFactor > 0.25 && bestAffordance === "IdlePatrol") {
+                dialogue = "*Traces silvery battle scar across armor plate* The Kitin raiders left their mark at the pass, but the caravan held the line.";
+            } else if (bestAffordance === "AppraiseFelledTimber") {
                 dialogue = `By the Great Root! That's ${volume} MBF of ${grade}. I'll buy it for $${profit} delivered to the Pyr outpost!`;
             } else if (bestAffordance === "DispatchMektoubCaravan") {
                 dialogue = `Rigging harness on two heavy Mektoubs. Haul cost is $${haul}/MBF for the ${km}km transit.`;
@@ -385,9 +445,10 @@
 
             document.getElementById('dax-text').innerText = `"${dialogue}"`;
             document.getElementById('dax-affordance').innerText = bestAffordance;
-            document.getElementById('dax-score').innerText = bestScore.toFixed(2);
+            document.getElementById('dax-somatic-status').innerText = somatic.bleedSeverity > 0.3 ? "Bleeding Scar" : (somatic.permanentScarFactor > 0.2 ? "Veteran Scar" : "Pristine");
+            document.getElementById('dax-somatic-status').style.color = somatic.bleedSeverity > 0.3 ? "#ef4444" : (somatic.permanentScarFactor > 0.2 ? "#38bdf8" : "#10b981");
 
-            return { bestAffordance, bestScore, dialogue, ranked };
+            return { bestAffordance, bestScore, dialogue, ranked, somatic };
         }
 
         function triggerDaxReaction(eventName, mbf, profit, grade) {
@@ -403,6 +464,31 @@
             if (document.getElementById('npc-inspector').classList.contains('open')) {
                 renderInspectorContent();
             }
+        }
+
+        function ambushCaravanAndInflictSlash() {
+            daxHasInjury = true;
+            recoveryTimescaleHours = 0; // Reset to fresh open wound
+
+            daxSensory.kitin_tremor = 1.0;
+            daxSensory.deforestation_spike = 0.8;
+
+            const timeStr = new Date().toISOString().substring(11, 19) + ' UTC';
+            daxEpisodicMemory.push(`[${timeStr}] COMBAT AMBUSH: Kitin scout mandible slash across chest plate (Severity 2.5). Armor torn, blood drawn.`);
+
+            // Screen combat flash
+            spawnFloatingText("💥 CARAVAN AMBUSH! MANDIBLE SLASH ON FOREMAN DAX!", "#ef4444", window.innerWidth * 0.65, window.innerHeight * 0.35);
+
+            evaluateDaxAffordances();
+            if (document.getElementById('npc-inspector').classList.contains('open')) {
+                renderInspectorContent();
+            }
+        }
+
+        function setTimescaleHours(val) {
+            recoveryTimescaleHours = parseFloat(val);
+            evaluateDaxAffordances();
+            renderInspectorContent();
         }
 
         function openNpcInspector() {
@@ -423,7 +509,39 @@
 
         function renderInspectorContent() {
             const body = document.getElementById('inspector-body');
-            if (activeTab === 'persona') {
+            const somatic = getDaxSomaticState(recoveryTimescaleHours);
+
+            if (activeTab === 'somatic') {
+                body.innerHTML = `
+<span style="color:#38bdf8;"># SOMATIC.md: Physical Damage & Allometric Recovery Timescale</span>
+
+<span style="color:#f59e0b;">## Biological Wound Healing Curve (Swanson Occlusion)</span>
+• <b>Allometric Formula:</b> R(t) = 1.0 - exp(-λ · t / Severity)
+• <b>Status:</b> <span style="color:${somatic.bleedSeverity > 0.3 ? '#ef4444' : '#10b981'}; font-weight:bold;">${somatic.visualDescription}</span>
+• <b>Healing Progress:</b> ${(somatic.healingProgress * 100).toFixed(1)}% complete
+• <b>Bleed Severity:</b> ${(somatic.bleedSeverity * 100).toFixed(0)}% (Active hemorrhage)
+• <b>Permanent Scar Factor:</b> ${(somatic.permanentScarFactor * 100).toFixed(0)}% (Weathered silver line)
+• <b>Limp Gait Locomotion Penalty:</b> ${(somatic.limpFactor * 100).toFixed(0)}%
+
+<div style="background:#0f172a; padding:10px; border-radius:6px; margin:12px 0; border:1px solid #1e293b;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:bold;">
+        <span>Recovery Timescale Elapsed:</span>
+        <span style="color:#38bdf8;">${recoveryTimescaleHours.toFixed(1)} Hours</span>
+    </div>
+    <input type="range" min="0" max="120" step="1" value="${recoveryTimescaleHours}" oninput="setTimescaleHours(this.value)" style="width:100%; height:6px; accent-color:#38bdf8; cursor:pointer;">
+    <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#64748b; margin-top:2px;">
+        <span>0h (Fresh Bleeding)</span>
+        <span>24h (Crusted Scab)</span>
+        <span>120h (Weathered Scar)</span>
+    </div>
+</div>
+
+<span style="color:#f59e0b;">## Dynamic 3D Vertex & Texture Manifest</span>
+• <b>Chest Plate Decal:</b> Rendered at [2.0, 0.8, 1.76] with color rgb(${(somatic.color[0]*255).toFixed(0)}, ${(somatic.color[1]*255).toFixed(0)}, ${(somatic.color[2]*255).toFixed(0)})
+• <b>Locomotion Tilt:</b> Dax tilts ${somatic.limpFactor > 0.1 ? 'with a noticeable limp' : 'upright and vigilant'}
+• <b>Episodic Integration:</b> Scars persist across sessions and unlock veteran dialogue trees!
+`;
+            } else if (activeTab === 'persona') {
                 body.innerHTML = `
 <span style="color:#38bdf8;"># NPC Persona: Foreman Dax (Fyros Outpost Timber Overseer)</span>
 
@@ -432,11 +550,12 @@
 • <b>Role:</b> Regional Timber Overseer & Mektoub Logistics Master
 • <b>Allegiance:</b> Karavan Industrial Syndicate (High Trade Value, Medium Kami Disregard)
 • <b>Temperament:</b> Pragmatic, profit-driven, hyper-vigilant regarding Kitin swarm tremors.
+• <b>Physical Marks:</b> ${somatic.visualDescription}
 
 <span style="color:#f59e0b;">## Motivation & Value Matrix</span>
-• <b>Top Priority:</b> Securing high-grade timber (Seasoned Heartwood, Amber Crystallized) for Fyros fortifications.
+• <b>Top Priority:</b> Securing high-grade timber for Fyros fortifications.
 • <b>Secondary Priority:</b> Maintaining caravan route safety along rugged 18° mountain inclines.
-• <b>Phobia / Dread:</b> Kitin hive awakenings and subterranean mandibles destroying Mektoub pack beasts.
+• <b>Phobia / Dread:</b> Kitin hive awakenings destroying Mektoub pack beasts.
 
 <span style="color:#f59e0b;">## Active Sensory Input Vector</span>
 • Timber Harvested:     <b>${daxSensory.timber_harvested.toFixed(2)}</b>
@@ -472,6 +591,7 @@ ${JSON.stringify({
     npc_id: "foreman_dax",
     sensory_inputs: Object.keys(daxSensory),
     current_stimuli: daxSensory,
+    somatic_recovery_hours: recoveryTimescaleHours,
     affordance_weights: daxWeights
 }, null, 2)}
 `;
@@ -558,7 +678,6 @@ ${daxEpisodicMemory.join('\n\n')}
                 spawnParticle();
             }
 
-            // Trigger Foreman Dax's agentic neural mapping!
             triggerDaxReaction('LivingTreeHarvested', mbf, totalProfit, 'Seasoned Heartwood');
 
             setTimeout(() => {
@@ -567,7 +686,6 @@ ${daxEpisodicMemory.join('\n\n')}
             }, 3500);
         }
 
-        // Particle system for wood chips and amber sap sparks
         const particles = [];
         function spawnParticle() {
             const angle = Math.random() * Math.PI * 2;
@@ -633,7 +751,9 @@ ${daxEpisodicMemory.join('\n\n')}
             attribute vec3 aPosition;
             attribute vec3 aNormal;
             attribute vec3 aColor;
+            attribute float aIsScar;
             uniform mat4 uMatrix;
+            uniform vec3 uScarTint;
             varying vec3 vNormal;
             varying vec3 vPos;
             varying vec3 vColor;
@@ -641,7 +761,11 @@ ${daxEpisodicMemory.join('\n\n')}
             void main() {
                 vNormal = aNormal;
                 vPos = aPosition;
-                vColor = aColor;
+                vec3 col = aColor;
+                if (aIsScar > 0.5) {
+                    col = uScarTint;
+                }
+                vColor = col;
                 gl_Position = uMatrix * vec4(aPosition, 1.0);
             }
         `;
@@ -689,13 +813,15 @@ ${daxEpisodicMemory.join('\n\n')}
         const vertices = [];
         const normals = [];
         const colors = [];
+        const scarTags = [];
         const indices = [];
 
-        function addQuad(p0, p1, p2, p3, n, c) {
+        function addQuad(p0, p1, p2, p3, n, c, isScar = 0.0) {
             const baseIdx = vertices.length / 3;
             vertices.push(...p0, ...p1, ...p2, ...p3);
             normals.push(...n, ...n, ...n, ...n);
             colors.push(...c, ...c, ...c, ...c);
+            scarTags.push(isScar, isScar, isScar, isScar);
             indices.push(baseIdx, baseIdx + 1, baseIdx + 2, baseIdx, baseIdx + 2, baseIdx + 3);
         }
 
@@ -784,7 +910,7 @@ ${daxEpisodicMemory.join('\n\n')}
             }
         }
 
-        // 4. Stylized Fyros Outpost Warrior Avatar (standing facing tree)
+        // 4. Stylized Fyros Outpost Warrior Avatar
         function addWarriorAvatar(ax, ay, az) {
             addQuad([ax-0.2, ay+0.4, az+0.15], [ax+0.2, ay+0.4, az+0.15], [ax+0.2, ay+1.1, az+0.15], [ax-0.2, ay+1.1, az+0.15], [0,0,1], [0.85, 0.28, 0.15]);
             addQuad([ax-0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.15, az+0.1], [ax+0.12, ay+1.4, az+0.1], [ax-0.12, ay+1.4, az+0.1], [0,0,1], [0.92, 0.75, 0.60]);
@@ -793,15 +919,15 @@ ${daxEpisodicMemory.join('\n\n')}
         }
         addWarriorAvatar(0, 0, 2.2);
 
-        // 5. Stylized Foreman Dax (Karavan Overseer Avatar standing at right)
+        // 5. Stylized Foreman Dax (Karavan Overseer with dynamic battle scar)
         function addForemanDaxAvatar(dx, dy, dz) {
-            // Gold & amber Karavan overseer robe
             addQuad([dx-0.22, dy+0.35, dz+0.15], [dx+0.22, dy+0.35, dz+0.15], [dx+0.22, dy+1.15, dz+0.15], [dx-0.22, dy+1.15, dz+0.15], [0,0,1], [0.92, 0.70, 0.15]);
-            // Head with overseer visor
             addQuad([dx-0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.18, dz+0.1], [dx+0.12, dy+1.42, dz+0.1], [dx-0.12, dy+1.42, dz+0.1], [0,0,1], [0.88, 0.72, 0.58]);
             addQuad([dx-0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.30, dz+0.12], [dx+0.13, dy+1.36, dz+0.12], [dx-0.13, dy+1.36, dz+0.12], [0,0,1], [0.2, 0.8, 1.0]);
-            // Surveyor clipboard & quill
             addQuad([dx-0.35, dy+0.6, dz+0.2], [dx-0.15, dy+0.6, dz+0.2], [dx-0.15, dy+0.9, dz+0.2], [dx-0.35, dy+0.9, dz+0.2], [0,0,1], [0.95, 0.95, 0.90]);
+
+            // Somatic Chest Slash Scar Polygon (tagged with isScar = 1.0)
+            addQuad([dx-0.16, dy+0.68, dz+0.17], [dx+0.12, dy+0.92, dz+0.17], [dx+0.10, dy+0.97, dz+0.17], [dx-0.18, dy+0.73, dz+0.17], [0,0,1], [0.92, 0.70, 0.15], 1.0);
         }
         addForemanDaxAvatar(2.0, 0, 1.6);
 
@@ -827,6 +953,13 @@ ${daxEpisodicMemory.join('\n\n')}
         gl.enableVertexAttribArray(aCol);
         gl.vertexAttribPointer(aCol, 3, gl.FLOAT, false, 0, 0);
 
+        const scarBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, scarBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(scarTags), gl.STATIC_DRAW);
+        const aIsScar = gl.getAttribLocation(program, 'aIsScar');
+        gl.enableVertexAttribArray(aIsScar);
+        gl.vertexAttribPointer(aIsScar, 1, gl.FLOAT, false, 0, 0);
+
         const idxBuf = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
@@ -834,6 +967,7 @@ ${daxEpisodicMemory.join('\n\n')}
         const uMatrix = gl.getUniformLocation(program, 'uMatrix');
         const uLightDir = gl.getUniformLocation(program, 'uLightDir');
         const uAmberPulse = gl.getUniformLocation(program, 'uAmberPulse');
+        const uScarTint = gl.getUniformLocation(program, 'uScarTint');
 
         gl.enable(gl.DEPTH_TEST);
 
@@ -884,6 +1018,7 @@ ${daxEpisodicMemory.join('\n\n')}
             gl.uniformMatrix4fv(uMatrix, false, mvp);
             gl.uniform3f(uLightDir, 0.5, 0.8, 0.6);
             gl.uniform1f(uAmberPulse, (Math.sin(time * 3.0) + 1.0) * 0.5);
+            gl.uniform3f(uScarTint, currentScarColor[0], currentScarColor[1], currentScarColor[2]);
 
             gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
 
