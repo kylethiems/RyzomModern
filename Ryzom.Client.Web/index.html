@@ -64,9 +64,9 @@
             top: 16px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(22, 27, 34, 0.9);
+            background: rgba(22, 27, 34, 0.92);
             backdrop-filter: blur(10px);
-            padding: 10px 20px;
+            padding: 8px 18px;
             border-radius: 8px;
             border: 1px solid #10b981;
             box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
@@ -74,10 +74,11 @@
             pointer-events: auto;
             cursor: pointer;
             transition: all 0.2s;
+            z-index: 10;
         }
         .target-hud:hover { border-color: #34d399; box-shadow: 0 0 24px rgba(16, 185, 129, 0.45); }
-        .target-name { font-size: 0.9rem; font-weight: 700; color: #10b981; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .target-details { font-size: 0.72rem; color: #94a3b8; font-family: monospace; margin-top: 2px; }
+        .target-name { font-size: 0.88rem; font-weight: 700; color: #10b981; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .target-details { font-size: 0.70rem; color: #94a3b8; font-family: monospace; margin-top: 2px; }
 
         /* Swanson Residual Stumpage Panel */
         .stumpage-card {
@@ -86,105 +87,172 @@
             right: 16px;
             background: rgba(15, 23, 42, 0.92);
             backdrop-filter: blur(12px);
-            padding: 14px 18px;
+            padding: 12px 16px;
             border-radius: 8px;
             border: 1px solid #334155;
-            width: 290px;
-            font-size: 0.78rem;
+            width: 280px;
+            font-size: 0.76rem;
             box-shadow: 0 8px 30px rgba(0,0,0,0.6);
             pointer-events: none;
             transition: transform 0.3s ease;
+            z-index: 10;
         }
-        .stumpage-title { font-size: 0.82rem; font-weight: 700; color: #f59e0b; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; pb: 4px; }
-        .stumpage-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-family: monospace; }
+        .stumpage-title { font-size: 0.80rem; font-weight: 700; color: #f59e0b; margin-bottom: 6px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }
+        .stumpage-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-family: monospace; }
 
         /* Agentic NPC Foreman Dax Speech Bubble */
         .dax-speech-bubble {
             position: absolute;
-            top: 16px;
-            right: 320px;
+            top: 260px;
+            left: 16px;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(12px);
             border: 1px solid #0284c7;
             box-shadow: 0 0 20px rgba(2, 132, 199, 0.35);
             border-radius: 8px;
-            padding: 12px 16px;
-            max-width: 320px;
-            font-size: 0.8rem;
+            padding: 10px 14px;
+            max-width: 260px;
+            font-size: 0.76rem;
             cursor: pointer;
             transition: all 0.25s;
             z-index: 5;
         }
         .dax-speech-bubble:hover { border-color: #38bdf8; transform: translateY(-2px); box-shadow: 0 0 26px rgba(56, 189, 248, 0.55); }
-        .dax-tag { font-size: 0.7rem; font-weight: 700; color: #f59e0b; text-transform: uppercase; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
-        .dax-affordance-line { font-size: 0.68rem; color: #94a3b8; font-family: monospace; margin-top: 5px; border-top: 1px solid #1e293b; padding-top: 4px; }
+        .dax-tag { font-size: 0.68rem; font-weight: 700; color: #f59e0b; text-transform: uppercase; margin-bottom: 3px; display: flex; align-items: center; justify-content: space-between; }
+        .dax-affordance-line { font-size: 0.66rem; color: #94a3b8; font-family: monospace; margin-top: 4px; border-top: 1px solid #1e293b; padding-top: 3px; }
 
         /* Agentic NPC Inspector Drawer Modal */
         .npc-inspector-modal {
             position: absolute;
             top: 0;
-            right: -470px;
-            width: 470px;
+            right: -550px;
+            width: 550px;
             height: 100%;
-            background: rgba(11, 15, 25, 0.96);
-            backdrop-filter: blur(16px);
+            background: rgba(11, 15, 25, 0.97);
+            backdrop-filter: blur(20px);
             border-left: 1px solid #334155;
-            box-shadow: -8px 0 32px rgba(0,0,0,0.7);
+            box-shadow: -10px 0 40px rgba(0,0,0,0.8);
             z-index: 30;
             display: flex;
             flex-direction: column;
             transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .npc-inspector-modal.open { right: 0; }
-        .inspector-header { padding: 14px 18px; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; }
-        .inspector-tabs { display: flex; background: #0f172a; border-bottom: 1px solid #1e293b; }
-        .tab-btn { flex: 1; padding: 9px 6px; font-size: 0.7rem; font-weight: 600; color: #94a3b8; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
-        .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; background: rgba(56, 189, 248, 0.08); }
-        .inspector-content { flex: 1; overflow-y: auto; padding: 14px 18px; font-family: monospace; font-size: 0.74rem; color: #cbd5e1; white-space: pre-wrap; line-height: 1.5; }
+        .inspector-header { padding: 14px 18px; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; background: #0b1120; }
+        .inspector-tabs { display: flex; flex-wrap: wrap; background: #0f172a; border-bottom: 1px solid #1e293b; }
+        .tab-btn { padding: 8px 10px; font-size: 0.68rem; font-weight: 600; color: #94a3b8; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab-btn:hover { color: #f1f5f9; background: rgba(255,255,255,0.03); }
+        .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+        .inspector-content { flex: 1; overflow-y: auto; padding: 16px 20px; font-family: monospace; font-size: 0.74rem; color: #cbd5e1; white-space: pre-wrap; line-height: 1.5; }
         .inspector-footer { padding: 10px 18px; border-top: 1px solid #1e293b; display: flex; gap: 8px; background: #0f172a; flex-wrap: wrap; }
 
-        /* Controls Bar */
-        .controls {
+        /* Sleek MMO Bottom Action Dock */
+        .mmo-action-bar-container {
             position: absolute;
-            bottom: 20px;
+            bottom: 14px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            max-width: 95vw;
-            z-index: 10;
-        }
-        .action-btn {
-            background: #238636;
-            color: #ffffff;
-            border: 1px solid rgba(255,255,255,0.15);
-            padding: 9px 15px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            display: inline-flex;
+            flex-direction: column;
             align-items: center;
             gap: 6px;
-            text-decoration: none;
+            z-index: 20;
+            pointer-events: auto;
         }
-        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.15); }
-        .action-btn-primary {
-            background: #10b981;
-            color: #064e3b;
-            font-size: 0.85rem;
-            border: 1px solid #34d399;
-            box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+        .instruction-hint {
+            font-size: 0.73rem;
+            color: #94a3b8;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 4px 14px;
+            letter-spacing: 0.02em;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+            user-select: none;
+        }
+        .instruction-hint b { color: #38bdf8; }
+        .action-dock {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(13, 17, 23, 0.90);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 6px 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.65), 0 0 20px rgba(56, 189, 248, 0.15);
+        }
+        .dock-slot {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 62px;
+            height: 54px;
+            background: rgba(30, 41, 59, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #f1f5f9;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+            padding: 2px;
+        }
+        .dock-slot:hover {
+            transform: translateY(-3px);
+            background: rgba(51, 65, 85, 0.95);
+            border-color: #38bdf8;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+        }
+        .dock-slot:active {
+            transform: translateY(0);
+            filter: brightness(1.25);
+        }
+        .dock-key {
+            position: absolute;
+            top: 2px;
+            right: 3px;
+            font-size: 0.58rem;
+            font-weight: 800;
+            background: rgba(15, 23, 42, 0.92);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 3px;
+            padding: 0 3px;
+            line-height: 1.1;
+        }
+        .dock-icon {
+            font-size: 1.15rem;
+            margin-top: 4px;
+        }
+        .dock-name {
+            font-size: 0.62rem;
             font-weight: 700;
-            animation: pulse-border 2s infinite;
+            color: #cbd5e1;
+            margin-top: 2px;
+            letter-spacing: -0.01em;
         }
-        @keyframes pulse-border {
-            0%, 100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
-            50% { box-shadow: 0 0 22px rgba(16, 185, 129, 0.8); }
+        .dock-slot-harvest {
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        .dock-slot-harvest .dock-name {
+            color: #34d399;
+        }
+        .dock-slot-harvest:hover {
+            border-color: #10b981;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+        }
+        .dock-slot-workbench {
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+        .dock-slot-workbench .dock-name {
+            color: #c084fc;
+        }
+        .dock-slot-workbench:hover {
+            border-color: #c084fc;
+            box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);
         }
 
         .harvest-floater {
@@ -292,7 +360,7 @@
         </div>
 
         <!-- Dynamic Biome Ecosystem HUD -->
-        <div class="biome-hud" id="biome-hud" style="position: absolute; top: 70px; right: 20px; width: 300px; background: rgba(13, 17, 23, 0.90); border: 1px solid #30363d; border-radius: 8px; padding: 12px; font-size: 0.8rem; z-index: 10; backdrop-filter: blur(8px); box-shadow: 0 4px 16px rgba(0,0,0,0.4);">
+        <div class="biome-hud" id="biome-hud" style="position: absolute; top: 245px; right: 16px; width: 280px; background: rgba(13, 17, 23, 0.90); border: 1px solid #30363d; border-radius: 8px; padding: 12px; font-size: 0.8rem; z-index: 10; backdrop-filter: blur(8px); box-shadow: 0 4px 16px rgba(0,0,0,0.4);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <span style="font-weight:700; color:#38bdf8;">🌐 Dynamic Biome Ecosystem</span>
                 <span id="biome-pulse-tag" style="font-size:0.65rem; background:#064e3b; color:#34d399; padding:2px 6px; border-radius:4px; font-weight:700;">STABLE</span>
@@ -335,7 +403,8 @@
                 <button id="entity-btn-frontier" class="tab-btn" style="font-size:0.75rem; padding:4px 10px;" onclick="switchEntity('frontier')">🦂 Prime Roots (Frontier)</button>
             </div>
             <div class="inspector-tabs">
-                <button id="tab-btn-persona" class="tab-btn active" onclick="switchTab('persona')">PERSONA.md</button>
+                <button id="tab-btn-workbench" class="tab-btn active" onclick="switchTab('workbench')">🛠️ TECH WORKBENCH</button>
+                <button id="tab-btn-persona" class="tab-btn" onclick="switchTab('persona')">PERSONA.md</button>
                 <button id="tab-btn-somatic" class="tab-btn" onclick="switchTab('somatic')">SOMATIC.md (Scars)</button>
                 <button id="tab-btn-lifecycle" class="tab-btn" onclick="switchTab('lifecycle')">TIME_DILATION.md</button>
                 <button id="tab-btn-relevancy" class="tab-btn" onclick="switchTab('relevancy')">RELEVANCY_FOVEATED.md</button>
@@ -358,35 +427,60 @@
             </div>
         </div>
 
-        <div class="instruction-tag">🖱️ Click & Drag to Orbit | Click Tree to Harvest | Click Foreman Dax to Inspect Brain & Time-Dilation Aging</div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <button class="action-btn action-btn-primary" onclick="harvestBotanicalTree()">🪓 Harvest Living Tree (Swanson FVS)</button>
-            <button class="action-btn" style="background: #9333ea;" onclick="openNpcInspector(); switchTab('audiorestoration');">🎵 Neural Sound Restoration & Stems</button>
-            <button class="action-btn" style="background: #7c3aed;" onclick="openNpcInspector(); switchTab('audio');">🎧 Spatial Acoustics & HRTF (Audio)</button>
-            <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector(); switchTab('locationcache');">🧠 Spatial Muscle Memory (Cache)</button>
-            <button class="action-btn" style="background: #059669;" onclick="openNpcInspector(); switchTab('visualbudget');">✨ Foveated Visual Budget (GPU ms)</button>
-            <button class="action-btn" style="background: #be185d;" onclick="openNpcInspector(); switchEntity('arena'); switchTab('relevancy');">🎯 FoV Relevancy Culling (PvP)</button>
-            <button class="action-btn" style="background: #4338ca;" onclick="openNpcInspector(); switchTab('lifecycle')">⏩ Time-Dilation Training (Age NPCs)</button>
-            <button class="action-btn" style="background: #15803d;" onclick="harvestVillageTreeAndTriggerEcosystem()">🪓 Clear-Cut Village Grove</button>
-            <button class="action-btn" style="background: #0d9488;" onclick="allowEcosystemRecovery()">🌱 Allow Regrowth</button>
-            <button class="action-btn" style="background: #0284c7;" onclick="openNpcInspector()">🤖 Inspect Brains</button>
-            <button class="action-btn" style="background: #e11d48;" onclick="swingHeavyBladeHypertrophy()">⚔️ Swing Greatsword (+Arm Hypertrophy)</button>
-            <button class="action-btn" style="background: #ea580c;" onclick="castElementalSpell('Fire')">🔥 Cast Fire (Flame Eyes)</button>
-            <button class="action-btn" style="background: #0284c7;" onclick="castElementalSpell('Cold')">❄️ Cast Cold (Cyan Eyes)</button>
-            <button class="action-btn" style="background: #7c3aed;" onclick="castElementalSpell('Shock')">⚡ Cast Shock (Purple Eyes)</button>
-            <a href="comparison.html" class="action-btn" style="background: #d29922; color: #161b22;">Acetone Wash 3D ⇄</a>
-            <a href="tda_comparison.html" class="action-btn" style="background: #e3b341; color: #0d1117;">TDA 5-Trit ⇄</a>
-            <a href="cinematic_comparison.html" class="action-btn" style="background: #a371f7; color: #0d1117;">Cinematic GI ⇄</a>
-            <a href="ecology_comparison.html" class="action-btn" style="background: #047857; color: #ffffff;">Swanson Ecology 3D ⇄</a>
+        <!-- MMO Action Dock -->
+        <div class="mmo-action-bar-container">
+            <div class="instruction-hint">
+                🎮 <b>WASD:</b> Move Avatar &nbsp;|&nbsp; <b>Mouse Drag:</b> Orbit Camera &nbsp;|&nbsp; <b>Hotkeys / Click:</b> Action
+            </div>
+            <div class="action-dock">
+                <button class="dock-slot" onclick="triggerPlayerAttack()" title="Swing Greatsword Attack (Spacebar)">
+                    <span class="dock-key">SPACE</span>
+                    <span class="dock-icon">⚔️</span>
+                    <span class="dock-name">Attack</span>
+                </button>
+                <button class="dock-slot" onclick="triggerPlayerSpell('Fire')" title="Cast Incandescent Fire (1)">
+                    <span class="dock-key">1</span>
+                    <span class="dock-icon">🔥</span>
+                    <span class="dock-name">Fire</span>
+                </button>
+                <button class="dock-slot" onclick="triggerPlayerSpell('Cold')" title="Cast Cryogenic Frost (2)">
+                    <span class="dock-key">2</span>
+                    <span class="dock-icon">❄️</span>
+                    <span class="dock-name">Cold</span>
+                </button>
+                <button class="dock-slot" onclick="triggerPlayerSpell('Shock')" title="Cast Electric Shock (3)">
+                    <span class="dock-key">3</span>
+                    <span class="dock-icon">⚡</span>
+                    <span class="dock-name">Shock</span>
+                </button>
+                <button class="dock-slot dock-slot-harvest" onclick="harvestBotanicalTree()" title="Harvest Living Tree (E)">
+                    <span class="dock-key">E</span>
+                    <span class="dock-icon">🪓</span>
+                    <span class="dock-name">Harvest</span>
+                </button>
+                <button class="dock-slot" onclick="triggerDaxDialogue()" title="Interact with Foreman Dax (T)">
+                    <span class="dock-key">T</span>
+                    <span class="dock-icon">💬</span>
+                    <span class="dock-name">Talk Dax</span>
+                </button>
+                <button class="dock-slot" onclick="allowEcosystemRecovery()" title="Allow Forest Regrowth (R)">
+                    <span class="dock-key">R</span>
+                    <span class="dock-icon">🌱</span>
+                    <span class="dock-name">Regrowth</span>
+                </button>
+                <button class="dock-slot dock-slot-workbench" onclick="openNpcInspector(); switchTab('workbench');" title="Open Systems & Research Workbench (TAB)">
+                    <span class="dock-key">TAB</span>
+                    <span class="dock-icon">⚙️</span>
+                    <span class="dock-name">Workbench</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
         let currentHp = 1000, currentSap = 500, currentStam = 800;
         let harvestCount = 0;
-        let activeTab = 'persona';
+        let activeTab = 'workbench';
         let currentEntity = 'dax'; // 'dax' | 'village' | 'frontier'
 
         // Dynamic Morphological Adaptation (Hypertrophy & Ocular Elemental Shift)
@@ -1525,6 +1619,74 @@
         function renderInspectorContent() {
             const body = document.getElementById('inspector-body');
 
+            if (activeTab === 'workbench') {
+                body.innerHTML = `
+<div style="background: rgba(15, 23, 42, 0.8); border: 1px solid #38bdf8; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+    <div style="font-weight: 700; color: #38bdf8; font-size: 0.95rem; margin-bottom: 4px;">🛠️ SYSTEMS & BENCHMARKS WORKBENCH</div>
+    <div style="color: #94a3b8; font-size: 0.72rem;">Central Command Hub for Ryzom Modern's 100% NeL Engine Parity Subsystems & Live Research Testbeds.</div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+    <button onclick="switchTab('audiorestoration')" style="background: #9333ea; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 0.72rem; font-weight: 700;">
+        🎵 Neural Audio Restoration
+        <div style="color: #e9d5ff; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">22kHz to 96kHz BWE + 3-Stem Decomp</div>
+    </button>
+    <button onclick="switchTab('audio')" style="background: #7c3aed; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 0.72rem; font-weight: 700;">
+        🎧 Spatial Acoustics & HRTF
+        <div style="color: #ddd6fe; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">Ray Traced Occlusion & Distance Falloff</div>
+    </button>
+    <button onclick="switchTab('locationcache')" style="background: #0284c7; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 0.72rem; font-weight: 700;">
+        🧠 Spatial Muscle Memory
+        <div style="color: #bae6fd; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">Zero-Recompute Persistent VRAM Cache</div>
+    </button>
+    <button onclick="switchTab('visualbudget')" style="background: #059669; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 0.72rem; font-weight: 700;">
+        ✨ Foveated Visual Budget
+        <div style="color: #a7f3d0; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">16.6ms Target GPU Microsecond Allocator</div>
+    </button>
+    <button onclick="switchEntity('arena'); switchTab('relevancy');" style="background: #be185d; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 0.72rem; font-weight: 700;">
+        🎯 FoV Relevancy Culling
+        <div style="color: #fbcfe8; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">Massive PvP 400-Player Interest Mgmt</div>
+    </button>
+    <button onclick="switchEntity('dax'); switchTab('lifecycle');" style="background: #4338ca; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 6px; cursor: pointer; text-align: left; font-size: 0.72rem; font-weight: 700;">
+        ⏩ Time-Dilation Training
+        <div style="color: #c7d2fe; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">Continuous Age & Somatic Morphing</div>
+    </button>
+</div>
+
+<div style="border-top: 1px solid #334155; margin: 12px 0 10px 0;"></div>
+<div style="font-weight: 700; color: #fbbf24; font-size: 0.8rem; margin-bottom: 8px;">📊 COMPARATIVE VISUALIZATION SUITE (PARALLEL TOOLS)</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+    <a href="comparison.html" target="_blank" style="background: #1e293b; border: 1px solid #d29922; color: #fbbf24; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 0.72rem; font-weight: 700; display: block;">
+        🧪 Acetone Wash 3D ⇄
+        <div style="color: #cbd5e1; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">Interactive Transpiled vs Native Diff</div>
+    </a>
+    <a href="tda_comparison.html" target="_blank" style="background: #1e293b; border: 1px solid #e3b341; color: #fde047; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 0.72rem; font-weight: 700; display: block;">
+        📐 TDA 5-Trit Quantum ⇄
+        <div style="color: #cbd5e1; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">Ternary Topological Data Analysis</div>
+    </a>
+    <a href="cinematic_comparison.html" target="_blank" style="background: #1e293b; border: 1px solid #a371f7; color: #d8b4fe; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 0.72rem; font-weight: 700; display: block;">
+        🌟 Cinematic GI Comparison ⇄
+        <div style="color: #cbd5e1; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">Multi-Bounce Global Illumination & Shading</div>
+    </a>
+    <a href="ecology_comparison.html" target="_blank" style="background: #1e293b; border: 1px solid #047857; color: #6ee7b7; padding: 10px; border-radius: 6px; text-decoration: none; font-size: 0.72rem; font-weight: 700; display: block;">
+        🌲 Swanson Ecology 3D ⇄
+        <div style="color: #cbd5e1; font-weight: normal; font-size: 0.65rem; margin-top: 2px;">Botanical FVS Timber & Canopy Simulation</div>
+    </a>
+</div>
+
+<div style="border-top: 1px solid #334155; margin: 12px 0 10px 0;"></div>
+<div style="font-weight: 700; color: #34d399; font-size: 0.8rem; margin-bottom: 8px;">⚡ 100% NEL / RYZOM MIGRATION PARITY SUBSYSTEMS</div>
+<div style="font-size: 0.70rem; line-height: 1.6; color: #cbd5e1; background: #0f172a; padding: 10px; border-radius: 6px; border: 1px solid #1e293b;">
+    • <b>Skeletal Rigging & Keyframe Engine:</b> 4-bone vertex skinning, slerp blend trees, bone inverse bind matrices, and equipment sockets.<br>
+    • <b>CDLOD Continuous Quadtree Landscape Engine:</b> Chunked continuous LOD, morph distance blending, and heightfield collision raycasting across 5 Atys continents.<br>
+    • <b>Action Stanza Grammar Engine:</b> 12 brick primitives, 5 power tiers, credit-cost energy balancing, and runtime execution bytecode.<br>
+    • <b>Paperdoll 14-Slot Equipment Engine:</b> Material tiers Q1-Q250, durability degradation, and encumbrance speed/evasion penalties.<br>
+    • <b>Morton-64 Lattice Netcode:</b> 64-bit Z-order bitwise interleaving with 32-bit quantization for tick-perfect 60Hz arena replication.
+</div>
+`;
+                return;
+            }
+
             if (currentEntity === 'arena' || activeTab === 'relevancy') {
                 const rel = evaluateArenaRelevancy(arenaState.playerFovDeg, arenaState.playerHeadingDeg);
                 body.innerHTML = `
@@ -2350,6 +2512,7 @@ ${daxEpisodicMemory.join('\n\n')}
         resize();
 
         const vsSource = `
+            precision mediump float;
             attribute vec3 aPosition;
             attribute vec3 aNormal;
             attribute vec3 aColor;
@@ -2623,8 +2786,72 @@ ${daxEpisodicMemory.join('\n\n')}
         buildKitinMesh();
         const kitinIndexCount = indices.length - kitinIndexOffset;
 
+        // 8. Player Avatar: Fyros Outpost Warrior Mesh (Centered at origin)
+        function buildPlayerAvatarMesh() {
+            // Legs / Greaves
+            addQuad([-0.22, 0.0, -0.08], [-0.06, 0.0, -0.08], [-0.06, 0.65, -0.08], [-0.22, 0.65, -0.08], [0,0,-1], [0.35, 0.22, 0.15]);
+            addQuad([0.06, 0.0, -0.08], [0.22, 0.0, -0.08], [0.22, 0.65, -0.08], [0.06, 0.65, -0.08], [0,0,-1], [0.35, 0.22, 0.15]);
+            // Torso / Cuirass (Fyros Red & Bronze Plate)
+            addQuad([-0.25, 0.65, -0.15], [0.25, 0.65, -0.15], [0.25, 1.25, -0.15], [-0.25, 1.25, -0.15], [0,0,-1], [0.85, 0.28, 0.18]);
+            addQuad([-0.25, 0.65, 0.15], [0.25, 0.65, 0.15], [0.25, 1.25, 0.15], [-0.25, 1.25, 0.15], [0,0,1], [0.92, 0.35, 0.22]);
+            addQuad([-0.25, 1.25, -0.15], [0.25, 1.25, -0.15], [0.25, 1.25, 0.15], [-0.25, 1.25, 0.15], [0,1,0], [0.98, 0.75, 0.25]);
+            // Helmet & Glowing Visor
+            addQuad([-0.18, 1.25, -0.15], [0.18, 1.25, -0.15], [0.18, 1.62, -0.15], [-0.18, 1.62, -0.15], [0,0,-1], [0.45, 0.35, 0.28]);
+            addQuad([-0.18, 1.25, 0.15], [0.18, 1.25, 0.15], [0.18, 1.62, 0.15], [-0.18, 1.62, 0.15], [0,0,1], [0.45, 0.35, 0.28]);
+            addQuad([-0.12, 1.35, 0.16], [0.12, 1.35, 0.16], [0.12, 1.48, 0.16], [-0.12, 1.48, 0.16], [0,0,1], [0.15, 0.85, 1.0], 2.0); // Ocular glow
+            // Left Arm
+            addQuad([-0.38, 0.65, -0.08], [-0.25, 0.65, -0.08], [-0.25, 1.20, -0.08], [-0.38, 1.20, -0.08], [-1,0,0], [0.85, 0.65, 0.48]);
+            // Right Arm (Armed with Greatsword, tagged with 3.0 for hypertrophy)
+            addQuad([0.25, 0.65, -0.08], [0.38, 0.65, -0.08], [0.38, 1.20, -0.08], [0.25, 1.20, -0.08], [1,0,0], [0.88, 0.70, 0.52], 3.0);
+            // Greatsword Blade
+            addQuad([0.30, 0.40, 0.10], [0.36, 0.40, 0.10], [0.36, 1.85, 0.10], [0.30, 1.85, 0.10], [0,0,1], [0.82, 0.85, 0.92], 3.0);
+            // Greatsword Crossguard & Hilt
+            addQuad([0.24, 0.80, 0.10], [0.42, 0.80, 0.10], [0.42, 0.86, 0.10], [0.24, 0.86, 0.10], [0,0,1], [0.95, 0.75, 0.20], 3.0);
+        }
+        const playerIndexOffset = indices.length;
+        buildPlayerAvatarMesh();
+        const playerIndexCount = indices.length - playerIndexOffset;
+
+        // 9. Elemental Magic Projectile Orb Mesh (Centered glowing octahedron/cube)
+        function buildProjectileMesh() {
+            const s = 0.22;
+            addQuad([-s, -s, -s], [s, -s, -s], [s, s, -s], [-s, s, -s], [0, 0, -1], [1.0, 1.0, 1.0], 2.0);
+            addQuad([-s, -s, s], [s, -s, s], [s, s, s], [-s, s, s], [0, 0, 1], [1.0, 1.0, 1.0], 2.0);
+            addQuad([-s, -s, -s], [-s, -s, s], [-s, s, s], [-s, s, -s], [-1, 0, 0], [1.0, 1.0, 1.0], 2.0);
+            addQuad([s, -s, -s], [s, -s, s], [s, s, s], [s, s, -s], [1, 0, 0], [1.0, 1.0, 1.0], 2.0);
+            addQuad([-s, s, -s], [s, s, -s], [s, s, s], [-s, s, s], [0, 1, 0], [1.0, 1.0, 1.0], 2.0);
+            addQuad([-s, -s, -s], [s, -s, -s], [s, -s, s], [-s, -s, s], [0, -1, 0], [1.0, 1.0, 1.0], 2.0);
+        }
+        const projectileIndexOffset = indices.length;
+        buildProjectileMesh();
+        const projectileIndexCount = indices.length - projectileIndexOffset;
+
+
         function getTranslatedMvp(baseMvp, tx, ty, tz) {
             const out = new Float32Array(baseMvp);
+            out[12] = baseMvp[12] + baseMvp[0] * tx + baseMvp[4] * ty + baseMvp[8] * tz;
+            out[13] = baseMvp[13] + baseMvp[1] * tx + baseMvp[5] * ty + baseMvp[9] * tz;
+            out[14] = baseMvp[14] + baseMvp[2] * tx + baseMvp[6] * ty + baseMvp[10] * tz;
+            out[15] = baseMvp[15] + baseMvp[3] * tx + baseMvp[7] * ty + baseMvp[11] * tz;
+            return out;
+        }
+
+        function getRotatedAndTranslatedMvp(baseMvp, tx, ty, tz, angleY) {
+            const c = Math.cos(angleY);
+            const s = Math.sin(angleY);
+            const r0 = baseMvp[0] * c + baseMvp[8] * -s;
+            const r1 = baseMvp[1] * c + baseMvp[9] * -s;
+            const r2 = baseMvp[2] * c + baseMvp[10] * -s;
+            const r3 = baseMvp[3] * c + baseMvp[11] * -s;
+
+            const r8 = baseMvp[0] * s + baseMvp[8] * c;
+            const r9 = baseMvp[1] * s + baseMvp[9] * c;
+            const r10 = baseMvp[2] * s + baseMvp[10] * c;
+            const r11 = baseMvp[3] * s + baseMvp[11] * c;
+
+            const out = new Float32Array(baseMvp);
+            out[0] = r0; out[1] = r1; out[2] = r2; out[3] = r3;
+            out[8] = r8; out[9] = r9; out[10] = r10; out[11] = r11;
             out[12] = baseMvp[12] + baseMvp[0] * tx + baseMvp[4] * ty + baseMvp[8] * tz;
             out[13] = baseMvp[13] + baseMvp[1] * tx + baseMvp[5] * ty + baseMvp[9] * tz;
             out[14] = baseMvp[14] + baseMvp[2] * tx + baseMvp[6] * ty + baseMvp[10] * tz;
@@ -2677,6 +2904,160 @@ ${daxEpisodicMemory.join('\n\n')}
 
         gl.enable(gl.DEPTH_TEST);
 
+
+        // Real-Time Gameplay Avatar & Physics Controller
+        const player = {
+            pos: [0.0, 0.0, 4.0],
+            vel: [0.0, 0.0, 0.0],
+            heading: 0.0, // Radians
+            speed: 0.075,
+            isMoving: false,
+            swingTimer: 0.0,
+            walkCycle: 0.0
+        };
+
+        const activeProjectiles = [];
+
+        function spawn3DProjectile(element, origin, forward) {
+            const colors = {
+                Fire: [1.0, 0.42, 0.05],
+                Cold: [0.15, 0.85, 1.0],
+                Shock: [0.85, 0.25, 1.0]
+            };
+            activeProjectiles.push({
+                element,
+                pos: [origin[0], origin[1] + 1.2, origin[2]],
+                vel: [Math.sin(forward) * 0.35, 0.02, Math.cos(forward) * 0.35],
+                color: colors[element] || [1, 1, 1],
+                life: 1.0
+            });
+        }
+
+        // Combat and Interactive Action Triggers
+        function triggerPlayerAttack() {
+            player.swingTimer = 1.0;
+            swingHeavyBladeHypertrophy();
+
+            // Check distance to Living Tree (origin [0,0,0])
+            const distToTree = Math.hypot(player.pos[0], player.pos[2]);
+            if (distToTree < 2.5) {
+                harvestBotanicalTree();
+            }
+
+            // Check distance to Kitin
+            const distToKitin = Math.hypot(player.pos[0] - ecosystem.kitinPos[0], player.pos[2] - ecosystem.kitinPos[2]);
+            if (distToKitin < 3.0) {
+                spawnFloatingText("💥 HIT! Cleaved Armored Kitin Carapace! -145 HP", "#ef4444", window.innerWidth * 0.5, window.innerHeight * 0.4);
+            }
+        }
+
+        function triggerPlayerSpell(element) {
+            castElementalSpell(element);
+            spawn3DProjectile(element, player.pos, player.heading);
+        }
+
+        function triggerDaxDialogue() {
+            const distToDax = Math.hypot(player.pos[0] - 2.0, player.pos[2] - 1.6);
+            if (distToDax < 4.5) {
+                openNpcInspector();
+                switchTab('persona');
+                daxSensory.player_proximity = 1.0;
+                evaluateDaxAffordances();
+            } else {
+                spawnFloatingText("🚶 Move closer to Foreman Dax at the outpost to talk! [WASD]", "#38bdf8", window.innerWidth * 0.5, window.innerHeight * 0.35);
+            }
+        }
+
+        // Keyboard Event Listeners for WASD + Combat Gameplay
+        const keysDown = {};
+        window.addEventListener('keydown', (e) => {
+            keysDown[e.key.toLowerCase()] = true;
+
+            // Spacebar: Swing Greatsword Attack
+            if (e.code === 'Space') {
+                e.preventDefault();
+                triggerPlayerAttack();
+            }
+
+            // 1 / 2 / 3: Cast Elemental Magic Spells
+            if (e.key === '1') {
+                triggerPlayerSpell('Fire');
+            } else if (e.key === '2') {
+                triggerPlayerSpell('Cold');
+            } else if (e.key === '3') {
+                triggerPlayerSpell('Shock');
+            }
+
+            // E: Harvest Living Tree
+            if (e.key.toLowerCase() === 'e') {
+                harvestBotanicalTree();
+            }
+
+            // T: Talk to Foreman Dax
+            if (e.key.toLowerCase() === 't') {
+                triggerDaxDialogue();
+            }
+
+            // R: Allow Ecosystem Recovery
+            if (e.key.toLowerCase() === 'r') {
+                allowEcosystemRecovery();
+            }
+
+            // Tab: Toggle Systems Workbench
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const modal = document.getElementById('npc-inspector');
+                if (modal.classList.contains('open')) {
+                    closeNpcInspector();
+                } else {
+                    openNpcInspector();
+                    switchTab('workbench');
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keysDown[e.key.toLowerCase()] = false;
+        });
+
+        function updatePlayerLocomotion() {
+            let moveX = 0, moveZ = 0;
+
+            if (keysDown['w'] || keysDown['arrowup']) moveZ -= 1;
+            if (keysDown['s'] || keysDown['arrowdown']) moveZ += 1;
+            if (keysDown['a'] || keysDown['arrowleft']) moveX -= 1;
+            if (keysDown['d'] || keysDown['arrowright']) moveX += 1;
+
+            if (moveX !== 0 || moveZ !== 0) {
+                player.isMoving = true;
+                player.walkCycle += 0.15;
+                const len = Math.hypot(moveX, moveZ);
+                const normX = moveX / len;
+                const normZ = moveZ / len;
+
+                // Move relative to current camera yaw (rotY)
+                const cosRot = Math.cos(rotY);
+                const sinRot = Math.sin(rotY);
+
+                const worldMoveX = (normX * cosRot - normZ * sinRot) * player.speed;
+                const worldMoveZ = (normX * sinRot + normZ * cosRot) * player.speed;
+
+                player.pos[0] += worldMoveX;
+                player.pos[2] += worldMoveZ;
+                player.heading = Math.atan2(worldMoveX, worldMoveZ);
+
+                // Proximity awareness for Foreman Dax
+                const distToDax = Math.hypot(player.pos[0] - 2.0, player.pos[2] - 1.6);
+                daxSensory.player_proximity = distToDax < 4.5 ? Math.max(0.2, 1.0 - (distToDax / 4.5)) : 0.0;
+            } else {
+                player.isMoving = false;
+            }
+
+            if (player.swingTimer > 0) {
+                player.swingTimer = Math.max(0, player.swingTimer - 0.05);
+            }
+        }
+
         let time = 0;
         function render() {
             time += 0.03;
@@ -2700,7 +3081,11 @@ ${daxEpisodicMemory.join('\n\n')}
             const cx = Math.cos(rotX), sx = Math.sin(rotX);
             const mvp = new Float32Array(16);
 
-            const tx = 0, ty = -2.2, tz = -9.2;
+            updatePlayerLocomotion();
+            // Smooth Camera Follow Player Avatar in 3D
+            const tx = -player.pos[0] * 0.4;
+            const ty = -2.2 - (player.isMoving ? Math.sin(player.walkCycle * 2.0) * 0.04 : 0);
+            const tz = -9.2 - player.pos[2] * 0.35;
             mvp[0] = p[0] * cy;
             mvp[1] = p[5] * sx * sy;
             mvp[2] = p[10] * -cx * sy;
@@ -2761,6 +3146,65 @@ ${daxEpisodicMemory.join('\n\n')}
             const kitinMvp = getTranslatedMvp(mvp, ecosystem.kitinPos[0], ecosystem.kitinPos[1], ecosystem.kitinPos[2]);
             gl.uniformMatrix4fv(uMatrix, false, kitinMvp);
             gl.drawElements(gl.TRIANGLES, kitinIndexCount, gl.UNSIGNED_SHORT, kitinIndexOffset * 2);
+
+            // 5. Draw Playable 3D Player Avatar (Fyros Warrior with Greatsword & Heading Rotation)
+            const swingOffset = Math.sin(player.swingTimer * Math.PI) * 0.4;
+            const avatarY = player.pos[1] + (player.isMoving ? Math.sin(player.walkCycle * 2.0) * 0.06 : 0);
+            const playerMvp = getRotatedAndTranslatedMvp(
+                mvp, 
+                player.pos[0] + Math.sin(player.heading) * swingOffset, 
+                avatarY, 
+                player.pos[2] + Math.cos(player.heading) * swingOffset,
+                player.heading
+            );
+            gl.uniformMatrix4fv(uMatrix, false, playerMvp);
+            gl.drawElements(gl.TRIANGLES, playerIndexCount, gl.UNSIGNED_SHORT, playerIndexOffset * 2);
+
+            // 6. Update, Animate, and Render Active 3D Elemental Magic Projectiles
+            for (let i = activeProjectiles.length - 1; i >= 0; i--) {
+                const proj = activeProjectiles[i];
+                proj.pos[0] += proj.vel[0];
+                proj.pos[1] += proj.vel[1];
+                proj.pos[2] += proj.vel[2];
+                proj.life -= 0.022;
+
+                // Collision with Armored Kitin
+                const distToKitin = Math.hypot(proj.pos[0] - ecosystem.kitinPos[0], proj.pos[2] - ecosystem.kitinPos[2]);
+                if (distToKitin < 1.6) {
+                    if (proj.element === 'Fire') {
+                        spawnFloatingText("🔥 BLAST! Incandescent Fireball consumed Kitin! -285 HP", "#f97316", window.innerWidth * 0.52, window.innerHeight * 0.38);
+                    } else if (proj.element === 'Cold') {
+                        spawnFloatingText("❄️ FROSTBITE! Shattered Chitin Carapace! -215 HP", "#38bdf8", window.innerWidth * 0.52, window.innerHeight * 0.38);
+                    } else if (proj.element === 'Shock') {
+                        spawnFloatingText("⚡ VOLTAIC DISCHARGE! Stunned Kitin for 3.0s! -190 HP", "#a855f7", window.innerWidth * 0.52, window.innerHeight * 0.38);
+                    }
+                    activeProjectiles.splice(i, 1);
+                    continue;
+                }
+
+                // Collision with Living Heartwood Tree
+                const distToTree = Math.hypot(proj.pos[0], proj.pos[2]);
+                if (distToTree < 1.5 && proj.pos[1] < 3.2) {
+                    spawnFloatingText(`✨ Elemental Surge Infused Living Heartwood! (+${proj.element})`, "#34d399", window.innerWidth * 0.5, window.innerHeight * 0.42);
+                    activeProjectiles.splice(i, 1);
+                    continue;
+                }
+
+                if (proj.life <= 0) {
+                    activeProjectiles.splice(i, 1);
+                    continue;
+                }
+
+                // Draw glowing projectile orb
+                const projMvp = getTranslatedMvp(mvp, proj.pos[0], proj.pos[1], proj.pos[2]);
+                gl.uniformMatrix4fv(uMatrix, false, projMvp);
+                gl.uniform3f(uOcularTint, proj.color[0], proj.color[1], proj.color[2]);
+                gl.uniform1f(uOcularGlow, 1.0);
+                gl.drawElements(gl.TRIANGLES, projectileIndexCount, gl.UNSIGNED_SHORT, projectileIndexOffset * 2);
+            }
+            // Restore player ocular tint uniforms for next frame
+            gl.uniform3f(uOcularTint, morphology.ocularColor[0], morphology.ocularColor[1], morphology.ocularColor[2]);
+            gl.uniform1f(uOcularGlow, morphology.ocularIntensity);
 
             requestAnimationFrame(render);
         }
